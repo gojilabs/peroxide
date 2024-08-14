@@ -109,8 +109,8 @@ module Peroxide
       @parent = old_parent
     end
 
-    def self.boolean(name, optional: false)
-      register_property(Peroxide::Property::Boolean.new(name, optional:))
+    def self.boolean(name, required: false)
+      register_property(Peroxide::Property::Boolean.new(name, required:))
     end
 
     def self.date(name, range: nil, required: false)
