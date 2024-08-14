@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+require_relative '../property'
+
 module Peroxide
   class Property
-    class Boolean < Property
+    class Boolean < Peroxide::Property
       FALSE_VALUES = [
         false,
         0,
@@ -60,7 +62,7 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid boolean"
 
       def initialize(name, required: false)
-        super
+        super(name, required:)
       end
 
       def true?

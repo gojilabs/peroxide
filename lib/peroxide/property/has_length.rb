@@ -1,25 +1,22 @@
 # frozen_string_literal: true
 
 module Peroxide
-  module Property
+  class Property
     module HasLength
       def self.included(base)
         base.class_eval do
-          def length=(value)
-            if value.is_a?(Range)
-              @min_length = value.min
-              @max_length = value.max
-            elsif value.is_a?(Integer)
-              @min_length = value
-              @max_length = value
+          def length=(length)
+            if length.is_a?(Range)
+              @length = length
+            elsif length.is_a?(Integer)
+              @length = length..length
             else
-              raise Peroxide::InvalidPropertyError, "Invalid length: #{value}"
+              raise Invalid, "Invalid length: #{length}"
             end
           end
 
           def check_length
-            (!defined?(@min_length) && !defined?(@max_length)) ||
-              (@min_length <= value && value <= @max_length)
+            !defined?(@length) || @length.include?(value.length)
           end
         end
       end

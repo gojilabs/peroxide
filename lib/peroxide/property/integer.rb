@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
+require_relative '../property'
+require_relative '../property/has_range'
+
 module Peroxide
   class Property
-    class Integer < Property
+    class Integer < Peroxide::Property
       include Peroxide::Property::HasRange
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an integer"
 
       def initialize(name, required: false, range: nil)
-        super
+        super(name, required:)
         self.range = range
       end
 

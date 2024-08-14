@@ -1,9 +1,19 @@
 # frozen_string_literal: true
 
 require 'rack'
+require_relative 'property/array'
+require_relative 'property/boolean'
+require_relative 'property/date'
+require_relative 'property/datetime'
+require_relative 'property/enum'
+require_relative 'property/float'
+require_relative 'property/integer'
+require_relative 'property/string'
 
 module Peroxide
   class Sanitizer
+    class Failed < StandardError; end
+
     def self.index
       @index = {}
       @action = :index
@@ -43,14 +53,14 @@ module Peroxide
       instance_variable_set("@#{@action}", ivar)
     end
 
-    def self.for_status(status)
+    def self.response(status)
       @properties = []
       yield if block_given?
 
       code = status.to_i
       if status.to_s == code.to_s # integer code
         # message = Rack::Utils::HTTP_STATUS_CODES[code]
-        symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE_MAP.detect { |k, v| v == code }.first
+        symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE_MAP.detect { |_k, v| v == code }.first
       else # assuming symbol code
         symbol = status.to_sym
         code = Rack::Utils::SYMBOL_TO_STATUS_CODE_MAP[symbol]
@@ -64,7 +74,7 @@ module Peroxide
     end
 
     def self.register_property(property)
-      if @parent.blank?
+      if !@parent
         @properties << property
       elsif @parent.supports_multiple_children?
         @parent.children << property
@@ -78,11 +88,11 @@ module Peroxide
     def self.sanitize!(params, behavior = 'request')
       action = params['action']
       action_behaviors = instance_variable_get("@#{action}")
-      raise Peroxide::SanitizationFailed, "Action '#{action}' is not supported" if action_behaviors.blank?
+      raise Failed, "Action '#{action}' is not supported" if !action_behaviors || action_behaviors.empty?
 
       properties = action_behaviors[behavior]
-      if properties.blank?
-        raise Peroxide::SanitizationFailed,
+      if !properties || properties.empty?
+        raise Failed,
               "Properties for '#{behavior}' in '#{action}' are missing"
       end
 

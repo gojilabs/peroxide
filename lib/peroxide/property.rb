@@ -1,6 +1,7 @@
 module Peroxide
   class Property
     class Error < StandardError; end
+    class Invalid < Error; end
     class ConfigurationError < Error; end
     class ValidationError < Error; end
 
@@ -17,10 +18,12 @@ module Peroxide
     attr_reader :name, :value, :required
 
     def initialize(name, required: false)
-      raise ConfigurationError, 'Property name is required' if name.blank?
+      raise ConfigurationError, 'Property name is required' unless name.to_s&.length&.positive?
 
       @name = name
       @required = required
+
+      puts "Property '#{name}' initialized, required: #{required}"
     end
 
     def supports_multiple_children?
@@ -37,7 +40,7 @@ module Peroxide
 
     def validate!(param)
       @value = param
-      raise ValidationError, error_message unless (!required? && value.blank?) || valid?
+      raise ValidationError, error_message unless (!required? && (!value || value.empty?)) || valid?
 
       @value
     end

@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
+require_relative '../property'
+require_relative '../property/has_length'
+
 module Peroxide
   class Property
-    class String < Property
+    class String < Peroxide::Property
       include Peroxide::Property::HasLength
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a string"
 
       def initialize(name, required: false, length: nil)
-        super
+        super(name, required:)
         self.length = length
       end
 

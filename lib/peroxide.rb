@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/string'
 require_relative 'peroxide/version'
+require_relative 'peroxide/sanitizer'
 
 module Peroxide
-  class Error < StandardError; end
-  class SanitizationFailed < Error; end
-  class ValidationFailed < Error; end
-  class InvalidPropertyValue < Error; end
   # Your code goes here...
 end

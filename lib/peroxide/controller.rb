@@ -15,7 +15,7 @@ module Peroxide
 
       def sanitized_response(status, body)
         validated_body = @sanitizer_class.sanitize!(body, status)
-        return head status if validated_body.blank?
+        return head status if !validated_body || validated_body.empty?
 
         render json: validated_body, status:
       end

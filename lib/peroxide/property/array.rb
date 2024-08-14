@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-require 'peroxide/property/has_length'
+require_relative '../property'
+require_relative 'has_length'
 
 module Peroxide
   class Property
-    class Array < Property
+    class Array < Peroxide::Property
       include Peroxide::Property::HasLength
 
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an array"
@@ -12,7 +13,7 @@ module Peroxide
       attr_writer :child
 
       def initialize(name, length: nil, required: false)
-        super
+        super(name, required:)
         self.length = length
       end
 
