@@ -12,11 +12,11 @@ module Peroxide
         @children = []
       end
 
-      private
-
-      def supports_multiple_children?
-        true
+      def add_child(child)
+        @children << child
       end
+
+      private
 
       def valid?
         value.is_a?(Hash) && @children.all? do |child|

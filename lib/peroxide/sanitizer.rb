@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rack'
+require 'rack/utils'
 require_relative 'property/array'
 require_relative 'property/boolean'
 require_relative 'property/date'
@@ -8,6 +8,7 @@ require_relative 'property/datetime'
 require_relative 'property/enum'
 require_relative 'property/float'
 require_relative 'property/integer'
+require_relative 'property/object'
 require_relative 'property/string'
 
 module Peroxide
@@ -57,13 +58,14 @@ module Peroxide
       @properties = []
       yield if block_given?
 
-      code = status.to_i
+      code = status.to_s.to_i
       if status.to_s == code.to_s # integer code
         # message = Rack::Utils::HTTP_STATUS_CODES[code]
-        symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE_MAP.detect { |_k, v| v == code }.first
+        code = status.to_i
+        symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE.detect { |_k, v| v == code }.first
       else # assuming symbol code
         symbol = status.to_sym
-        code = Rack::Utils::SYMBOL_TO_STATUS_CODE_MAP[symbol]
+        code = Rack::Utils::SYMBOL_TO_STATUS_CODE[symbol]
         # message = Rack::Utils::HTTP_STATUS_CODES[code]
       end
 
@@ -76,9 +78,9 @@ module Peroxide
     def self.register_property(property)
       if !@parent
         @properties << property
-      elsif @parent.supports_multiple_children?
-        @parent.children << property
-      elsif @parent.supports_single_child?
+      elsif @parent.respond_to?(:add_child)
+        @parent.add_child(property)
+      elsif @parent.respond_to?(:child=)
         @parent.child = property
       end
 

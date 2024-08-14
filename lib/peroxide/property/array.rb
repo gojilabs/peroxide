@@ -19,10 +19,6 @@ module Peroxide
 
       private
 
-      def supports_single_child?
-        true
-      end
-
       def valid?
         value.is_a?(Array) && check_length && value.all? do |item|
           @child.validate!(item)

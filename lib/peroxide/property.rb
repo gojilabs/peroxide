@@ -26,14 +26,6 @@ module Peroxide
       puts "Property '#{name}' initialized, required: #{required}"
     end
 
-    def supports_multiple_children?
-      false
-    end
-
-    def supports_single_child?
-      false
-    end
-
     def required?
       @required
     end
