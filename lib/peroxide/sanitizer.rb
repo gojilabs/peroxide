@@ -133,6 +133,10 @@ module Peroxide
       register_property(Peroxide::Property::Integer.new(name, range:, required:))
     end
 
+    def self.no_content
+      register_property(Peroxide::Property::NoContent.new)
+    end
+
     def self.object(name, required: false)
       old_parent = @parent
       @parent = register_property(Peroxide::Property::Object.new(name, required:))
