@@ -13,8 +13,12 @@ module Peroxide
 
       private
 
+      def random_value
+        nil
+      end
+
       def valid?
-        value.blank?
+        value.nil?
       end
     end
   end

@@ -8,6 +8,7 @@ require_relative 'property/datetime'
 require_relative 'property/enum'
 require_relative 'property/float'
 require_relative 'property/integer'
+require_relative 'property/no_content'
 require_relative 'property/object'
 require_relative 'property/string'
 
@@ -15,33 +16,15 @@ module Peroxide
   class Sanitizer
     class Failed < StandardError; end
 
-    def self.index
-      @index = {}
-      @action = :index
-      yield if block_given?
-    end
+    def self.action(name)
+      @actions ||= {}
 
-    def self.show
-      @show = {}
-      @action = :show
-      yield if block_given?
-    end
+      @current_action = name.to_sym
+      @actions[@current_action] = {
+        request: [],
+        response: {}
+      }
 
-    def self.create
-      @create = {}
-      @action = :create
-      yield if block_given?
-    end
-
-    def self.update
-      @update = {}
-      @action = :update
-      yield if block_given?
-    end
-
-    def self.destroy
-      @destroy = {}
-      @action = :destroy
       yield if block_given?
     end
 
@@ -49,9 +32,7 @@ module Peroxide
       @properties = []
       yield if block_given?
 
-      ivar = instance_variable_get("@#{@action}")
-      ivar['request'] = @properties
-      instance_variable_set("@#{@action}", ivar)
+      @actions[@current_action][:request] = @properties
     end
 
     def self.response(status)
@@ -60,19 +41,15 @@ module Peroxide
 
       code = status.to_s.to_i
       if status.to_s == code.to_s # integer code
-        # message = Rack::Utils::HTTP_STATUS_CODES[code]
         code = status.to_i
         symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE.detect { |_k, v| v == code }.first
       else # assuming symbol code
         symbol = status.to_sym
         code = Rack::Utils::SYMBOL_TO_STATUS_CODE[symbol]
-        # message = Rack::Utils::HTTP_STATUS_CODES[code]
       end
 
-      ivar = instance_variable_get("@#{@action}")
-      ivar[code.to_s] = @properties
-      ivar[symbol.to_s] = @properties
-      instance_variable_set("@#{@action}", ivar)
+      @actions[@current_action][:response][code.to_sym] = @properties
+      @actions[@current_action][:response][symbol.to_sym] = @properties
     end
 
     def self.register_property(property)
@@ -87,18 +64,31 @@ module Peroxide
       property
     end
 
-    def self.sanitize!(params, behavior = 'request')
-      action = params['action']
-      action_behaviors = instance_variable_get("@#{action}")
-      raise Failed, "Action '#{action}' is not supported" if !action_behaviors || action_behaviors.empty?
+    def self.sanitize_request!(params)
+      action = params['action'].to_sym
+      properties = @actions[action][:request]
+      return Peroxide::Property.sanitize!(params, properties) if properties.present?
 
-      properties = action_behaviors[behavior]
-      if !properties || properties.empty?
-        raise Failed,
-              "Properties for '#{behavior}' in '#{action}' are missing"
+      raise Failed, "Properties for '#{action}' request are missing"
+    end
+
+    def self.sanitize_response!(params, expected_status)
+      action = params['action'].to_sym
+      properties = @actions[action][:response][expected_status.to_sym]
+      return Peroxide::Property.sanitize!(params, properties) if properties.present?
+
+      raise Failed, "Properties for '#{action}' response #{expected_status} are missing"
+    end
+
+    def self.placeholder_response!(action, status)
+      properties = @actions[action.to_sym][:response][status.to_sym]
+      return nil if properties.length == 1 && properties.first.is_a?(Peroxide::Property::NoContent)
+
+      {}.tap do |values|
+        properties.each do |property|
+          values[property.name] = property.random_value
+        end
       end
-
-      Peroxide::Property.sanitize_request!(params, properties)
     end
 
     def self.array(name, length: nil, required: false)

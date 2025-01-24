@@ -60,6 +60,7 @@ module Peroxide
       ].freeze
 
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid boolean"
+      RANDOM_VALUE_OPTIONS = [true, false].freeze
 
       def initialize(name, required: false)
         super(name, required:)
@@ -74,6 +75,10 @@ module Peroxide
       end
 
       private
+
+      def random_value
+        RANDOM_VALUE_OPTIONS.sample
+      end
 
       def valid?
         true? || false?

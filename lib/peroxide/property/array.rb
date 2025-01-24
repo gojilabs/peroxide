@@ -19,10 +19,21 @@ module Peroxide
 
       private
 
+      def random_value
+        len = length? ? length.to_a.sample : rand(20).to_i
+        len.times.map do
+          @child.random_value
+        end
+      end
+
       def valid?
         value.is_a?(Array) && check_length && value.all? do |item|
           @child.validate!(item)
         end
+      end
+
+      def value_for_length_check
+        value
       end
     end
   end

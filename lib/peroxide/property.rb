@@ -30,6 +30,12 @@ module Peroxide
       @required
     end
 
+    def placeholder
+      return nil unless required? || Property::Boolean::RANDOM_VALUE_OPTIONS.sample
+
+      random_value
+    end
+
     def validate!(param)
       @value = param
       raise ValidationError, error_message unless (!required? && (!value || value.empty?)) || valid?
@@ -38,6 +44,18 @@ module Peroxide
     end
 
     private
+
+    def random_value
+      raise NotImplementedError, 'random_value must be implemented by every child class of Peroxide::Property'
+    end
+
+    def valid?
+      raise NotImplementedError, 'valid? must be implemented by every child class of Peroxide::Property'
+    end
+
+    def value_for_length_check
+      @value
+    end
 
     def error_message
       format(ERROR_MESSAGE, name:, value:)

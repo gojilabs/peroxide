@@ -35,8 +35,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rack', '>= 2.0', '< 4'
 
   spec.add_development_dependency 'pry'
+  spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '>= 1.0'
   spec.add_development_dependency 'ruby-lsp'
+  spec.add_development_dependency 'simplecov', '~> 0.22.0'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

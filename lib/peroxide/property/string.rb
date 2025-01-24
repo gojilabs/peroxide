@@ -17,7 +17,11 @@ module Peroxide
       private
 
       def valid?
-        value.to_s == value
+        value.eql?(value_for_length_check) && check_length
+      end
+
+      def value_for_length_check
+        value
       end
     end
   end

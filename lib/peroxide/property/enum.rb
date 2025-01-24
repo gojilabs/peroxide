@@ -14,6 +14,10 @@ module Peroxide
 
       private
 
+      def random_value
+        @values.sample
+      end
+
       def valid?
         @values.include?(value)
       end
