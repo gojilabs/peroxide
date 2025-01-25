@@ -14,7 +14,8 @@ require_relative 'property/string'
 
 module Peroxide
   class Sanitizer
-    class Failed < StandardError; end
+    class Failed < Error; end
+    class InvalidStatusCode < Error; end
 
     def self.action(name)
       @actions ||= {}
@@ -35,21 +36,11 @@ module Peroxide
       @actions[@current_action][:request] = @properties
     end
 
-    def self.response(status)
+    def self.response(code)
       @properties = []
       yield if block_given?
 
-      code = status.to_s.to_i
-      if status.to_s == code.to_s # integer code
-        code = status.to_i
-        symbol = Rack::Utils::SYMBOL_TO_STATUS_CODE.detect { |_k, v| v == code }.first
-      else # assuming symbol code
-        symbol = status.to_sym
-        code = Rack::Utils::SYMBOL_TO_STATUS_CODE[symbol]
-      end
-
-      @actions[@current_action][:response][code.to_sym] = @properties
-      @actions[@current_action][:response][symbol.to_sym] = @properties
+      @actions[@current_action][:response][http_code(code)] = @properties
     end
 
     def self.register_property(property)
@@ -72,16 +63,16 @@ module Peroxide
       raise Failed, "Properties for '#{action}' request are missing"
     end
 
-    def self.sanitize_response!(params, expected_status)
+    def self.sanitize_response!(params, code)
       action = params['action'].to_sym
-      properties = @actions[action][:response][expected_status.to_sym]
+      properties = @actions[action][:response][http_code(code)]
       return Peroxide::Property.sanitize!(params, properties) if properties.present?
 
-      raise Failed, "Properties for '#{action}' response #{expected_status} are missing"
+      raise Failed, "Properties for '#{action}' response #{code} are missing"
     end
 
-    def self.placeholder_response!(action, status)
-      properties = @actions[action.to_sym][:response][status.to_sym]
+    def self.placeholder_response!(action, code)
+      properties = @actions[action.to_sym][:response][http_code(code)]
       return nil if properties.length == 1 && properties.first.is_a?(Peroxide::Property::NoContent)
 
       {}.tap do |values|
@@ -137,6 +128,13 @@ module Peroxide
 
     def self.string(name, length: nil, required: false)
       register_property(Peroxide::Property::String.new(name, length:, required:))
+    end
+
+    def self.http_code(code)
+      code = code.to_i
+      raise InvalidStatusCode, "Invalid status code: #{code}" if code < 100 || code > 599
+
+      code
     end
   end
 end

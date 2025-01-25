@@ -1,7 +1,6 @@
 module Peroxide
   class Property
-    class Error < StandardError; end
-    class Invalid < Error; end
+    class Error < Peroxide::Error; end
     class ConfigurationError < Error; end
     class ValidationError < Error; end
 
@@ -58,7 +57,7 @@ module Peroxide
     end
 
     def error_message
-      format(ERROR_MESSAGE, name:, value:)
+      format(self.class::ERROR_MESSAGE, name:, value:)
     end
   end
 end

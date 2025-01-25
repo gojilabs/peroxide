@@ -51,8 +51,7 @@ RSpec.describe Peroxide::Sanitizer do
         end
 
         actions = described_class.instance_variable_get(:@actions)
-        expect(actions[:test][:response][:'200'].length).to eq(1)
-        expect(actions[:test][:response][:ok].length).to eq(1)
+        expect(actions[:test][:response][200].length).to eq(1)
       end
     end
 
@@ -63,8 +62,7 @@ RSpec.describe Peroxide::Sanitizer do
         end
 
         actions = described_class.instance_variable_get(:@actions)
-        expect(actions[:test][:response][:'200'].length).to eq(1)
-        expect(actions[:test][:response][:ok].length).to eq(1)
+        expect(actions[:test][:response][200].length).to eq(1)
       end
     end
   end
@@ -81,16 +79,16 @@ RSpec.describe Peroxide::Sanitizer do
 
     context 'when properties exist for action' do
       it 'validates request parameters' do
-        result = described_class.sanitize_request!({'action' => 'test', 'name' => 'value'})
+        result = described_class.sanitize_request!({ 'action' => 'test', 'name' => 'value' })
         expect(result[:name]).to eq('value')
       end
     end
 
     context 'when properties do not exist for action' do
       it 'raises Failed error' do
-        expect {
-          described_class.sanitize_request!({'action' => 'missing'})
-        }.to raise_error(Peroxide::Sanitizer::Failed, "Properties for 'missing' request are missing")
+        expect do
+          described_class.sanitize_request!({ 'action' => 'missing' })
+        end.to raise_error(Peroxide::Sanitizer::Failed, "Properties for 'missing' request are missing")
       end
     end
   end
@@ -99,7 +97,7 @@ RSpec.describe Peroxide::Sanitizer do
     before do
       described_class.instance_variable_set(:@actions, nil)
       described_class.action(:test) do
-        described_class.response(:ok) do
+        described_class.response(200) do
           described_class.string(:message, required: true)
         end
       end
@@ -107,16 +105,16 @@ RSpec.describe Peroxide::Sanitizer do
 
     context 'when properties exist for action and status' do
       it 'validates response parameters' do
-        result = described_class.sanitize_response!({'action' => 'test', 'message' => 'success'}, :ok)
+        result = described_class.sanitize_response!({ 'action' => 'test', 'message' => 'success' }, 200)
         expect(result[:message]).to eq('success')
       end
     end
 
     context 'when properties do not exist for action and status' do
       it 'raises Failed error' do
-        expect {
-          described_class.sanitize_response!({'action' => 'test'}, :not_found)
-        }.to raise_error(Peroxide::Sanitizer::Failed, "Properties for 'test' response not_found are missing")
+        expect do
+          described_class.sanitize_response!({ 'action' => 'test' }, 404)
+        end.to raise_error(Peroxide::Sanitizer::Failed, "Properties for 'test' response 404 are missing")
       end
     end
   end
@@ -125,10 +123,10 @@ RSpec.describe Peroxide::Sanitizer do
     before do
       described_class.instance_variable_set(:@actions, nil)
       described_class.action(:test) do
-        described_class.response(:ok) do
+        described_class.response(200) do
           described_class.string(:message)
         end
-        described_class.response(:no_content) do
+        described_class.response(204) do
           described_class.no_content
         end
       end
@@ -136,7 +134,7 @@ RSpec.describe Peroxide::Sanitizer do
 
     context 'when response has properties' do
       it 'generates placeholder values' do
-        result = described_class.placeholder_response!(:test, :ok)
+        result = described_class.placeholder_response!(:test, 200)
         expect(result).to be_a(Hash)
         expect(result).to have_key(:message)
       end
@@ -144,7 +142,7 @@ RSpec.describe Peroxide::Sanitizer do
 
     context 'when response is no_content' do
       it 'returns nil' do
-        result = described_class.placeholder_response!(:test, :no_content)
+        result = described_class.placeholder_response!(:test, 204)
         expect(result).to be_nil
       end
     end
@@ -193,7 +191,7 @@ RSpec.describe Peroxide::Sanitizer do
 
     describe '.enum' do
       it 'registers enum property' do
-        described_class.enum(:status, values: ['active', 'inactive'])
+        described_class.enum(:status, values: %w[active inactive])
         properties = described_class.instance_variable_get(:@properties)
         expect(properties.first).to be_a(Peroxide::Property::Enum)
       end

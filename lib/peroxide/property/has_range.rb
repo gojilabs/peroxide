@@ -13,13 +13,20 @@ module Peroxide
           attr_reader :range
 
           def range=(range)
-            raise Invalid, "Invalid range: #{range}" unless range.is_a?(Range)
+            return if range.nil?
 
-            @range = range
+            @range =
+              if range.is_a?(Range)
+                range
+              else
+                (range.to_i..range.to_i)
+              end
+
+            raise Invalid, "Invalid range: #{range}" unless @range.is_a?(Range)
           end
 
           def range?
-            defined?(@range) && @range.present?
+            defined?(@range)
           end
 
           def range_max_length
@@ -31,7 +38,7 @@ module Peroxide
           end
 
           def check_range
-            !range? || @range.include?(value_for_range_check)
+            !range? || @range.include?(value)
           end
 
           def random_value_from_range

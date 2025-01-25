@@ -11,20 +11,19 @@ module Peroxide
 
           def length=(length)
             return if length.nil?
-            raise LengthIsTooShortError if length < 1
 
             @length =
               if length.is_a?(Range)
                 length
-              elsif length.is_a?(Integer)
-                length..length
               else
-                raise Invalid, "Invalid length: #{length}"
+                (length.to_i..length.to_i)
               end
+
+            raise LengthIsTooShortError if @length.min < 1
           end
 
           def length?
-            defined?(@length) && @length.present?
+            defined?(@length)
           end
 
           def check_length

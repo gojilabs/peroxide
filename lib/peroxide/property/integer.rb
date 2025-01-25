@@ -37,7 +37,7 @@ module Peroxide
       end
 
       def value_for_length_check
-        value.to_i.to_s
+        value.to_s
       end
     end
   end

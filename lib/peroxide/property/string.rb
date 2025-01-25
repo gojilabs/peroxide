@@ -17,11 +17,16 @@ module Peroxide
       private
 
       def valid?
-        value.eql?(value_for_length_check) && check_length
+        value.to_s == value_for_length_check && check_length
       end
 
       def value_for_length_check
         value
+      end
+
+      def random_value
+        len = length? ? length.to_a.sample : rand(40).to_i
+        SecureRandom.hex(len)
       end
     end
   end
