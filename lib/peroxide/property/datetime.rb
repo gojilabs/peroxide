@@ -1,44 +1,46 @@
 # frozen_string_literal: true
 
+require 'time'
+require 'date'
 require_relative '../property'
 require_relative 'has_range'
 
 module Peroxide
   class Property
     class Datetime < Peroxide::Property
-      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' must be either a valid Time object, an integer representing a Unix timestamp, or a string in the format 'YYYY-MM-DD HH:MM:SSZ'"
+      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' must be either a valid Time object or an ISO8601 string"
 
-      def initialize(name, range: nil, required: false)
-        super(name, required:)
+      def initialize(name, required: false, range: nil)
         self.range = range
+
+        super(name, required:)
       end
 
       private
 
+      def serialized_value
+        value.to_time.utc.iso8601(3)
+      end
+
       def random_value
-        random_value_from_range || Time.new(
+        Time.new(
           rand(1900..Date.today.year + 10),
           rand(1..12),
           rand(1..28),
           rand(0..23),
           rand(0..59),
-          rand(0..59)
-        )
+          rand(0..59),
+          rand(0..999)
+        ).utc
       end
 
-      def valid?
-        @valid ||=
-          case value
-          when Time
-            value
-          when String
-            Time.strptime(value, '%Y-%m-%d %H:%M:%S%z')
-          else
-            numeric_value = value.to_i
-            raise ValidationError, error_message unless numeric_value.to_s.to_i == numeric_value
+      def validated_value(param)
+        return param if param.respond_to?(:to_time)
+        return Time.iso8601(param.to_s) if param.respond_to?(:to_s)
 
-            Time.at(numeric_value)
-          end
+        raise ValidationError
+      rescue StandardError
+        raise ValidationError
       end
 
       prepend Peroxide::Property::HasRange

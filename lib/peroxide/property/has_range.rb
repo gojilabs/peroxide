@@ -18,34 +18,31 @@ module Peroxide
           else
             (range.to_i..range.to_i)
           end
-
-        raise Invalid, "Invalid range: #{range}" unless @range.is_a?(Range)
+      rescue StandardError
+        raise InvalidRangeError
       end
 
       def range?
-        defined?(@range)
+        defined?(@range) && range
       end
 
-      def range_max_length
-        range? ? @range.max.to_s.length : 0
+      def check_range(param)
+        return true unless range?
+
+        range.include?(param)
       end
 
-      def range_min_length
-        range? ? @range.min.to_s.length : 0
+      def random_value
+        return range.to_a.sample if range?
+
+        super
       end
 
-      def check_range
-        !range? || @range.include?(value)
-      end
+      def validated_value(param)
+        validated_param = super(param)
+        return validated_param if check_range(validated_param)
 
-      def random_value_from_range
-        return nil unless range?
-
-        @range.to_a.sample
-      end
-
-      def valid?
-        super && check_range
+        raise ValidationError
       end
     end
   end

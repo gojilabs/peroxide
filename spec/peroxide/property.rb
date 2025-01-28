@@ -6,27 +6,6 @@ RSpec.describe Peroxide::Property do
   let(:name) { :test_property }
   let(:property) { described_class.new(name) }
 
-  describe '.sanitize!' do
-    let(:properties) { [property] }
-    let(:params) { { test_property: 'value' } }
-
-    before do
-      allow(property).to receive(:name).and_return(:test_property)
-      allow(property).to receive(:validate!).with('value')
-    end
-
-    it 'returns a hash of sanitized parameters' do
-      result = described_class.sanitize!(properties, params)
-      expect(result).to be_a(Hash)
-      expect(result[:test_property]).to eq('value')
-    end
-
-    it 'validates each property' do
-      expect(property).to receive(:validate!).with('value')
-      described_class.sanitize!(properties, params)
-    end
-  end
-
   describe '#initialize' do
     context 'with valid name' do
       it 'sets the name' do
@@ -63,64 +42,124 @@ RSpec.describe Peroxide::Property do
     end
   end
 
+  describe '#required?' do
+    context 'when required is true' do
+      let(:property) { described_class.new(name, required: true) }
+
+      it 'returns true' do
+        expect(property.required?).to be true
+      end
+    end
+
+    context 'when required is false' do
+      let(:property) { described_class.new(name, required: false) }
+
+      it 'returns false' do
+        expect(property.required?).to be false
+      end
+    end
+  end
+
   describe '#placeholder' do
     before do
       allow(property).to receive(:random_value).and_return('random')
     end
 
-    context 'when required is true' do
-      let(:property) { described_class.new(name, required: true) }
+    context 'when placeholder_required? is true' do
+      before do
+        allow(property).to receive(:placeholder_required?).and_return(true)
+      end
 
       it 'returns random value' do
         expect(property.placeholder).to eq('random')
       end
     end
 
-    context 'when required is false' do
-      it 'may return nil or random value' do
-        result = property.placeholder
-        expect([nil, 'random']).to include(result)
+    context 'when placeholder_required? is false' do
+      before do
+        allow(property).to receive(:placeholder_required?).and_return(false)
+      end
+
+      it 'returns nil' do
+        expect(property.placeholder).to be_nil
+      end
+    end
+  end
+
+  describe '#serialize' do
+    context 'when @serialize is defined' do
+      before do
+        property.instance_variable_set(:@serialize, 'cached')
+      end
+
+      it 'returns cached value' do
+        expect(property.serialize).to eq('cached')
+      end
+    end
+
+    context 'when @value is not defined' do
+      it 'returns nil' do
+        expect(property.serialize).to be_nil
+      end
+    end
+
+    context 'when @value is defined' do
+      before do
+        property.instance_variable_set(:@value, 'test')
+        allow(property).to receive(:serialized_value).and_return('serialized')
+      end
+
+      it 'returns serialized value' do
+        expect(property.serialize).to eq('serialized')
       end
     end
   end
 
   describe '#validate!' do
-    context 'when value is valid' do
-      before do
-        allow(property).to receive(:valid?).and_return(true)
-      end
+    context 'when required is true' do
+      let(:property) { described_class.new(name, required: true) }
 
-      it 'returns the value' do
-        expect(property.validate!('test')).to eq('test')
-      end
-
-      it 'sets the value' do
-        property.validate!('test')
-        expect(property.value).to eq('test')
-      end
-    end
-
-    context 'when value is invalid' do
-      before do
-        allow(property).to receive(:valid?).and_return(false)
-        allow(property).to receive(:error_message).and_return('error')
-      end
-
-      it 'raises ValidationError' do
-        expect { property.validate!('invalid') }.to raise_error(
+      it 'raises ValidationError if param is nil' do
+        expect { property.validate!(nil) }.to raise_error(
           Peroxide::Property::ValidationError,
-          'error'
+          "Property 'test_property' is required but was not provided"
         )
+      end
+
+      it 'sets and returns validated value if param is present' do
+        allow(property).to receive(:validated_value).with('test').and_return('validated')
+        expect(property.validate!('test')).to eq('validated')
+        expect(property.value).to eq('validated')
       end
     end
 
     context 'when required is false' do
-      it 'allows nil value' do
-        expect { property.validate!(nil) }.not_to raise_error
+      it 'sets and returns validated value' do
+        allow(property).to receive(:validated_value).with('test').and_return('validated')
+        expect(property.validate!('test')).to eq('validated')
+        expect(property.value).to eq('validated')
+      end
+    end
+  end
+
+  describe '#placeholder_required?' do
+    context 'when required is true' do
+      let(:property) { described_class.new(name, required: true) }
+
+      it 'returns true' do
+        expect(property.send(:placeholder_required?)).to be true
+      end
+    end
+
+    context 'when required is false' do
+      let(:property) { described_class.new(name, required: false) }
+
+      before do
+        stub_const('Peroxide::Property::Boolean::RANDOM_VALUE_OPTIONS', [true])
       end
 
-      it 'allows empty value' do
-        expect { property.validate!('') }.not_to raise_error
+      it 'returns random boolean value' do
+        expect(property.send(:placeholder_required?)).to be true
       end
     end
   end
@@ -134,22 +173,31 @@ RSpec.describe Peroxide::Property do
     end
   end
 
-  describe '#valid?' do
+  describe '#validated_value' do
     it 'raises NotImplementedError' do
-      expect { property.send(:valid?) }.to raise_error(
+      expect { property.send(:validated_value, 'test') }.to raise_error(
         NotImplementedError,
-        'valid? must be implemented by every child class of Peroxide::Property'
+        'validated_value must be implemented by every child class of Peroxide::Property'
       )
     end
   end
 
-  describe '#value_for_length_check' do
+  describe '#serialized_value' do
+    it 'raises NotImplementedError' do
+      expect { property.send(:serialized_value) }.to raise_error(
+        NotImplementedError,
+        'serialized_value must be implemented by every child class of Peroxide::Property'
+      )
+    end
+  end
+
+  describe '#error_message' do
     before do
       property.instance_variable_set(:@value, 'test')
     end
 
-    it 'returns the value' do
-      expect(property.send(:value_for_length_check)).to eq('test')
+    it 'formats error message with name and value' do
+      expect(property.send(:error_message)).to eq("Property 'test_property' is required but was not provided")
     end
   end
 end

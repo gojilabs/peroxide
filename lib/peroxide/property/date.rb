@@ -1,32 +1,41 @@
 # frozen_string_literal: true
 
+require 'date'
 require_relative '../property'
 require_relative 'has_range'
 
 module Peroxide
   class Property
     class Date < Peroxide::Property
-      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid date or is not a string in the format 'YYYY-MM-DD'"
+      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid date or is not an ISO8601 string"
 
-      def initialize(name, range: nil, required: false)
-        super(name, required:)
+      def initialize(name, required: false, range: nil)
         self.range = range
+
+        super(name, required:)
       end
 
       private
 
+      def serialized_value
+        value.to_date.iso8601
+      end
+
       def random_value
-        random_value_from_range || ::Date.new(
-          rand(1900..Time.now.year + 10),
+        ::Date.new(
+          rand(1900..Date.today.year + 10),
           rand(1..12),
           rand(1..28)
         )
       end
 
-      def valid?
-        @valid ||= value.respond_to?(:to_date) ? value.to_date : ::Date.parse(value)
-      rescue ::Date::Error, TypeError
-        false
+      def validated_value(param)
+        return param if param.respond_to?(:to_date)
+        return ::Date.iso8601(param.to_s) if param.respond_to?(:to_s)
+
+        raise ValidationError
+      rescue StandardError
+        raise ValidationError
       end
 
       prepend Peroxide::Property::HasRange

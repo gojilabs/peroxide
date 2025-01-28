@@ -7,18 +7,24 @@ module Peroxide
     class NoContent < Peroxide::Property
       ERROR_MESSAGE = 'Response body must be empty'
 
-      def initialize
-        super('_no_content', required: false)
+      def initialize(required: false)
+        super('_no_content', required:)
       end
 
       private
+
+      def serialized_value
+        nil
+      end
 
       def random_value
         nil
       end
 
-      def valid?
-        value.nil?
+      def validated_value(param)
+        return param if param.nil?
+
+        raise ValidationError
       end
     end
   end

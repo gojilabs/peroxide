@@ -7,6 +7,21 @@ RSpec.describe Peroxide::Property::Object do
   let(:object) { described_class.new(name) }
   let(:child) { double('child_property') }
 
+  describe '#serialized_value' do
+    before do
+      allow(child).to receive(:name).and_return(:child_name)
+      allow(child).to receive(:serialized_value).and_return('test_value')
+      allow(object).to receive(:value).and_return({ child_name: 'original_value' })
+      object.add_child(child)
+    end
+
+    it 'returns hash with serialized child values' do
+      result = object.send(:serialized_value)
+      expect(result).to be_a(Hash)
+      expect(result[:child_name]).to eq('test_value')
+    end
+  end
+
   describe '#random_value' do
     before do
       allow(child).to receive(:name).and_return(:child_name)
@@ -21,53 +36,41 @@ RSpec.describe Peroxide::Property::Object do
     end
   end
 
-  describe '#valid?' do
+  describe '#validated_value' do
     before do
-      allow(object).to receive(:value).and_return(value)
       allow(child).to receive(:name).and_return(:child_name)
+      allow(child).to receive(:validate!).with('test').and_return('validated_test')
       object.add_child(child)
     end
 
-    context 'when value is a hash and all children are valid' do
-      let(:value) { { child_name: 'test' } }
+    context 'with valid hash input' do
+      let(:param) { { child_name: 'test' } }
 
-      before do
-        allow(child).to receive(:validate!).with('test').and_return(true)
-      end
-
-      it 'returns true' do
-        expect(object.send(:valid?)).to be true
+      it 'returns hash with validated child values' do
+        result = object.send(:validated_value, param)
+        expect(result).to be_a(Hash)
+        expect(result[:child_name]).to eq('validated_test')
       end
     end
 
-    context 'when value is not a hash' do
-      ['not a hash', 42, [], nil].each do |invalid_value|
-        let(:value) { invalid_value }
-
-        it "returns false for #{invalid_value.inspect}" do
-          expect(object.send(:valid?)).to be false
+    context 'with non-hash input' do
+      ['not a hash', 42, [], nil].each do |invalid_param|
+        it "raises ValidationError for #{invalid_param.inspect}" do
+          expect { object.send(:validated_value, invalid_param) }
+            .to raise_error(Peroxide::Property::ValidationError)
         end
-      end
-    end
-
-    context 'when child validation fails' do
-      let(:value) { { child_name: 'invalid' } }
-
-      before do
-        allow(child).to receive(:validate!).with('invalid')
-          .and_raise(Peroxide::Property::ValidationError)
-      end
-
-      it 'returns false' do
-        expect(object.send(:valid?)).to be false
       end
     end
   end
 
   describe '#add_child' do
-    it 'adds a child property' do
+    before do
+      allow(child).to receive(:name).and_return(:child_name)
+    end
+
+    it 'adds child property to children hash' do
       object.add_child(child)
-      expect(object.instance_variable_get(:@children)).to include(child)
+      expect(object.instance_variable_get(:@children)).to eq({ child_name: child })
     end
   end
 
@@ -88,8 +91,8 @@ RSpec.describe Peroxide::Property::Object do
       end
     end
 
-    it 'initializes with empty children array' do
-      expect(object.instance_variable_get(:@children)).to eq([])
+    it 'initializes with empty children hash' do
+      expect(object.instance_variable_get(:@children)).to eq({})
     end
   end
 end

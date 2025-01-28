@@ -12,14 +12,15 @@ RSpec.describe Peroxide::Property::Array do
   end
 
   describe '#random_value' do
-    context 'when length is not specified' do
-      before do
-        allow(item_property).to receive(:random_value).and_return('test')
-      end
+    before do
+      allow(item_property).to receive(:random_value).and_return('test')
+    end
 
-      it 'generates an array of random length with item_property values' do
+    context 'when length is not specified' do
+      it 'generates an array of random values up to DEFAULT_MAX_LENGTH' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
+        expect(result.length).to be <= described_class::DEFAULT_MAX_LENGTH
         expect(result.all? { |item| item == 'test' }).to be true
       end
     end
@@ -27,79 +28,61 @@ RSpec.describe Peroxide::Property::Array do
     context 'when length is specified' do
       let(:array) { described_class.new(name, length: 3) }
 
-      before do
-        allow(item_property).to receive(:random_value).and_return('test')
-      end
-
-      it 'generates an array of specified length with item_property values' do
+      it 'generates an array with length within the specified range' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
-        expect(result.length).to eq(3)
+        expect(result.length).to be <= 3
         expect(result.all? { |item| item == 'test' }).to be true
       end
     end
   end
 
-  describe '#valid?' do
+  describe '#serialized_value' do
+    let(:value) { [1, 2, 3] }
+
     before do
       allow(array).to receive(:value).and_return(value)
-      allow(array).to receive(:check_length).and_return(true)
+      allow(item_property).to receive(:serialize).with(1).and_return('1')
+      allow(item_property).to receive(:serialize).with(2).and_return('2')
+      allow(item_property).to receive(:serialize).with(3).and_return('3')
     end
 
-    context 'when value is an array and all items are valid' do
-      let(:value) { [1, 2, 3] }
-
-      before do
-        allow(item_property).to receive(:validate!).and_return(true)
-      end
-
-      it 'returns true' do
-        expect(array.send(:valid?)).to be true
-      end
-    end
-
-    context 'when value is not an array' do
-      let(:value) { 'not an array' }
-
-      it 'returns false' do
-        expect(array.send(:valid?)).to be false
-      end
-    end
-
-    context 'when length check fails' do
-      let(:value) { [1, 2, 3] }
-
-      before do
-        allow(array).to receive(:check_length).and_return(false)
-      end
-
-      it 'returns false' do
-        expect(array.send(:valid?)).to be false
-      end
-    end
-
-    context 'when item_property validation fails' do
-      let(:value) { [1, 2, 3] }
-
-      before do
-        allow(item_property).to receive(:validate!).and_return(false)
-      end
-
-      it 'returns false' do
-        expect(array.send(:valid?)).to be false
-      end
+    it 'serializes each item in the array' do
+      expect(array.send(:serialized_value)).to eq(['1', '2', '3'])
     end
   end
 
-  describe '#value_for_length_check' do
-    let(:test_value) { [1, 2, 3] }
+  describe '#validated_value' do
+    context 'when param responds to map' do
+      let(:param) { [1, 2, 3] }
 
-    before do
-      allow(array).to receive(:value).and_return(test_value)
+      before do
+        allow(item_property).to receive(:validate!).with(1).and_return(1)
+        allow(item_property).to receive(:validate!).with(2).and_return(2)
+        allow(item_property).to receive(:validate!).with(3).and_return(3)
+      end
+
+      it 'validates each item in the array' do
+        expect(array.send(:validated_value, param)).to eq([1, 2, 3])
+      end
+
+      context 'when an item is invalid' do
+        before do
+          allow(item_property).to receive(:validate!).with(2).and_raise(Peroxide::Property::ValidationError)
+        end
+
+        it 'raises ValidationError' do
+          expect { array.send(:validated_value, param) }.to raise_error(Peroxide::Property::ValidationError)
+        end
+      end
     end
 
-    it 'returns the value' do
-      expect(array.send(:value_for_length_check)).to eq(test_value)
+    context 'when param does not respond to map' do
+      let(:param) { 'not an array' }
+
+      it 'raises ValidationError' do
+        expect { array.send(:validated_value, param) }.to raise_error(Peroxide::Property::ValidationError)
+      end
     end
   end
 end

@@ -5,28 +5,31 @@ require 'spec_helper'
 RSpec.describe Peroxide::Property::NoContent do
   let(:no_content) { described_class.new }
 
+  describe '#serialized_value' do
+    it 'returns nil' do
+      expect(no_content.send(:serialized_value)).to be_nil
+    end
+  end
+
   describe '#random_value' do
     it 'returns nil' do
       expect(no_content.send(:random_value)).to be_nil
     end
   end
 
-  describe '#valid?' do
-    context 'when value is nil' do
-      before do
-        allow(no_content).to receive(:value).and_return(nil)
-      end
-
-      it 'returns true' do
-        expect(no_content.send(:valid?)).to be true
+  describe '#validated_value' do
+    context 'with nil value' do
+      it 'returns nil' do
+        expect(no_content.send(:validated_value, nil)).to be_nil
       end
     end
 
-    context 'when value is not nil' do
+    context 'with non-nil values' do
       ['content', 42, true, [], {}].each do |invalid_value|
-        it "returns false for #{invalid_value.inspect}" do
-          allow(no_content).to receive(:value).and_return(invalid_value)
-          expect(no_content.send(:valid?)).to be false
+        it "raises ValidationError for #{invalid_value.inspect}" do
+          expect do
+            no_content.send(:validated_value, invalid_value)
+          end.to raise_error(Peroxide::Property::ValidationError)
         end
       end
     end
@@ -37,8 +40,20 @@ RSpec.describe Peroxide::Property::NoContent do
       expect(no_content.name).to eq('_no_content')
     end
 
-    it 'sets required to false' do
-      expect(no_content.required?).to be false
+    context 'when required is true' do
+      let(:no_content) { described_class.new(required: true) }
+
+      it 'sets required to true' do
+        expect(no_content.required?).to be true
+      end
+    end
+
+    context 'when required is false' do
+      let(:no_content) { described_class.new(required: false) }
+
+      it 'sets required to false' do
+        expect(no_content.required?).to be false
+      end
     end
   end
 end

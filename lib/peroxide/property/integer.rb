@@ -7,6 +7,7 @@ module Peroxide
   class Property
     class Integer < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an integer"
+      DEFAULT_RANDOM_RANGE = (-1000..1000)
 
       def initialize(name, required: false, range: nil)
         self.range = range
@@ -16,12 +17,18 @@ module Peroxide
 
       private
 
-      def random_value
-        random_value_from_range || rand(1000).to_i
+      def serialized_value
+        value.to_i
       end
 
-      def valid?
-        value.to_s.to_i == value
+      def random_value
+        rand(DEFAULT_RANDOM_RANGE).to_i
+      end
+
+      def validated_value(param)
+        return param if param.to_s.to_i == param
+
+        raise ValidationError
       end
 
       prepend Peroxide::Property::HasRange

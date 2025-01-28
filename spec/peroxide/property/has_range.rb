@@ -5,36 +5,48 @@ require 'spec_helper'
 RSpec.describe Peroxide::Property::HasRange do
   let(:test_class) do
     Class.new do
-      include Peroxide::Property::HasRange
+      def initialize(name)
+        @name = name
+      end
 
-      def value_for_range_check
+      def random_value
         42
       end
+
+      def validated_value(param)
+        param
+      end
+
+      prepend Peroxide::Property::HasRange
     end
   end
 
-  let(:instance) { test_class.new }
+  let(:name) { :test_property }
+  let(:instance) { test_class.new(name) }
 
   describe '#range=' do
     context 'with valid range' do
-      let(:valid_range) { 1..100 }
+      it 'sets integer range as range' do
+        instance.range = 5
+        expect(instance.range).to eq(5..5)
+      end
 
-      it 'sets the range' do
-        instance.range = valid_range
-        expect(instance.range).to eq(valid_range)
+      it 'sets range directly' do
+        instance.range = 5..10
+        expect(instance.range).to eq(5..10)
       end
     end
 
     context 'with invalid range' do
-      it 'raises Invalid error' do
-        expect { instance.range = 'invalid' }.to raise_error(Peroxide::Property::Invalid)
+      it 'raises InvalidRangeError for non-numeric input' do
+        expect { instance.range = 'invalid' }.to raise_error(Peroxide::Property::HasRange::InvalidRangeError)
       end
     end
   end
 
   describe '#range?' do
     context 'when range is set' do
-      before { instance.range = 1..10 }
+      before { instance.range = 3 }
 
       it 'returns true' do
         expect(instance.range?).to be true
@@ -48,68 +60,30 @@ RSpec.describe Peroxide::Property::HasRange do
     end
   end
 
-  describe '#range_max_length' do
-    context 'when range is set' do
-      before { instance.range = 1..1000 }
-
-      it 'returns length of maximum value as string' do
-        expect(instance.range_max_length).to eq(4)
-      end
-    end
-
-    context 'when range is not set' do
-      it 'returns 0' do
-        expect(instance.range_max_length).to eq(0)
-      end
-    end
-  end
-
-  describe '#range_min_length' do
-    context 'when range is set' do
-      before { instance.range = 100..1000 }
-
-      it 'returns length of minimum value as string' do
-        expect(instance.range_min_length).to eq(3)
-      end
-    end
-
-    context 'when range is not set' do
-      it 'returns 0' do
-        expect(instance.range_min_length).to eq(0)
-      end
-    end
-  end
-
   describe '#check_range' do
     context 'when range is not set' do
       it 'returns true' do
-        expect(instance.check_range).to be true
+        expect(instance.check_range(100)).to be true
       end
     end
 
     context 'when range is set' do
-      context 'when value is within range' do
-        before { instance.range = 1..100 }
+      before { instance.range = 1..10 }
 
-        it 'returns true' do
-          expect(instance.check_range).to be true
-        end
+      it 'returns true for values within range' do
+        expect(instance.check_range(5)).to be true
       end
 
-      context 'when value is outside range' do
-        before { instance.range = 1..10 }
-
-        it 'returns false' do
-          expect(instance.check_range).to be false
-        end
+      it 'returns false for values outside range' do
+        expect(instance.check_range(11)).to be false
       end
     end
   end
 
-  describe '#random_value_from_range' do
+  describe '#random_value' do
     context 'when range is not set' do
-      it 'returns nil' do
-        expect(instance.random_value_from_range).to be_nil
+      it 'calls super' do
+        expect(instance.random_value).to eq(42)
       end
     end
 
@@ -117,8 +91,28 @@ RSpec.describe Peroxide::Property::HasRange do
       before { instance.range = 1..10 }
 
       it 'returns a random value from the range' do
-        result = instance.random_value_from_range
+        result = instance.random_value
         expect(result).to be_between(1, 10)
+      end
+    end
+  end
+
+  describe '#validated_value' do
+    context 'when range is not set' do
+      it 'returns validated param' do
+        expect(instance.validated_value(5)).to eq(5)
+      end
+    end
+
+    context 'when range is set' do
+      before { instance.range = 1..10 }
+
+      it 'returns validated param if within range' do
+        expect(instance.validated_value(5)).to eq(5)
+      end
+
+      it 'raises ValidationError if outside range' do
+        expect { instance.validated_value(11) }.to raise_error(Peroxide::Property::ValidationError)
       end
     end
   end

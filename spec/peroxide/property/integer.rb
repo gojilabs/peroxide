@@ -6,11 +6,24 @@ RSpec.describe Peroxide::Property::Integer do
   let(:name) { :test_integer }
   let(:integer) { described_class.new(name) }
 
+  describe '#serialized_value' do
+    let(:value) { 42 }
+
+    before do
+      allow(integer).to receive(:value).and_return(value)
+    end
+
+    it 'converts value to integer' do
+      expect(integer.send(:serialized_value)).to eq(42)
+    end
+  end
+
   describe '#random_value' do
     context 'when range is not specified' do
-      it 'generates a random integer' do
+      it 'generates a random integer within DEFAULT_RANDOM_RANGE' do
         result = integer.send(:random_value)
         expect(result).to be_a(Integer)
+        expect(result).to be_between(-1000, 1000)
       end
     end
 
@@ -24,21 +37,19 @@ RSpec.describe Peroxide::Property::Integer do
     end
   end
 
-  describe '#valid?' do
+  describe '#validated_value' do
     context 'with valid integer values' do
-      [42, '42', -10, '-10'].each do |valid_value|
+      [42, '42', -10, '-10', 0, '0'].each do |valid_value|
         it "validates #{valid_value.inspect}" do
-          allow(integer).to receive(:value).and_return(valid_value)
-          expect(integer.send(:valid?)).to be true
+          expect(integer.send(:validated_value, valid_value)).to eq(valid_value)
         end
       end
     end
 
     context 'with invalid integer values' do
       ['invalid', '42.5', nil, [], {}, 3.14].each do |invalid_value|
-        it "invalidates #{invalid_value.inspect}" do
-          allow(integer).to receive(:value).and_return(invalid_value)
-          expect(integer.send(:valid?)).to be false
+        it "raises ValidationError for #{invalid_value.inspect}" do
+          expect { integer.send(:validated_value, invalid_value) }.to raise_error(Peroxide::Property::ValidationError)
         end
       end
     end
@@ -47,13 +58,11 @@ RSpec.describe Peroxide::Property::Integer do
       let(:integer) { described_class.new(name, range: 1..100) }
 
       it 'validates integers within range' do
-        allow(integer).to receive(:value).and_return(50)
-        expect(integer.send(:valid?)).to be true
+        expect(integer.send(:validated_value, 50)).to eq(50)
       end
 
-      it 'invalidates integers outside range' do
-        allow(integer).to receive(:value).and_return(101)
-        expect(integer.send(:valid?)).to be false
+      it 'raises ValidationError for integers outside range' do
+        expect { integer.send(:validated_value, 101) }.to raise_error(Peroxide::Property::ValidationError)
       end
     end
   end

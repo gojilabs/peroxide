@@ -12,42 +12,53 @@ RSpec.describe Peroxide::Property::Boolean do
     end
   end
 
-  describe '#valid?' do
+  describe '#serialized_value' do
     context 'with true values' do
       described_class::TRUE_VALUES.each do |value|
-        it "validates #{value.inspect} as true" do
+        it "serializes #{value.inspect} as true" do
           allow(boolean).to receive(:value).and_return(value)
-          expect(boolean.send(:valid?)).to be true
-          expect(boolean.true?).to be true
-          expect(boolean.false?).to be false
+          expect(boolean.send(:serialized_value)).to be true
         end
       end
     end
 
     context 'with false values' do
       described_class::FALSE_VALUES.each do |value|
-        it "validates #{value.inspect} as false" do
+        it "serializes #{value.inspect} as false" do
           allow(boolean).to receive(:value).and_return(value)
-          expect(boolean.send(:valid?)).to be true
-          expect(boolean.true?).to be false
-          expect(boolean.false?).to be true
+          expect(boolean.send(:serialized_value)).to be false
+        end
+      end
+    end
+  end
+
+  describe '#validated_value' do
+    context 'with true values' do
+      described_class::TRUE_VALUES.each do |value|
+        it "validates #{value.inspect}" do
+          expect(boolean.send(:validated_value, value)).to eq(value)
+        end
+      end
+    end
+
+    context 'with false values' do
+      described_class::FALSE_VALUES.each do |value|
+        it "validates #{value.inspect}" do
+          expect(boolean.send(:validated_value, value)).to eq(value)
         end
       end
     end
 
     context 'with invalid values' do
       ['invalid', nil, 42, 3.14, [], {}].each do |value|
-        it "invalidates #{value.inspect}" do
-          allow(boolean).to receive(:value).and_return(value)
-          expect(boolean.send(:valid?)).to be false
-          expect(boolean.true?).to be false
-          expect(boolean.false?).to be false
+        it "raises ValidationError for #{value.inspect}" do
+          expect { boolean.send(:validated_value, value) }.to raise_error(Peroxide::Property::ValidationError)
         end
       end
     end
   end
 
-  describe 'initialization' do
+  describe '#initialize' do
     context 'when required is true' do
       let(:boolean) { described_class.new(name, required: true) }
 

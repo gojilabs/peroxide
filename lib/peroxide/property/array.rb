@@ -6,28 +6,33 @@ require_relative 'has_length'
 module Peroxide
   class Property
     class Array < Peroxide::Property
-      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an array"
+      ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an array or one of its items is not valid"
+      DEFAULT_MAX_LENGTH = 20
 
       attr_accessor :item_property
 
-      def initialize(name, length: nil, required: false)
-        super(name, required:)
+      def initialize(name, required: false, length: nil)
         self.length = length
+
+        super(name, required:)
       end
 
       private
 
       def random_value
-        len = length? ? length.to_a.sample : rand(20).to_i
-        len.times.map do
+        rand(DEFAULT_MAX_LENGTH).to_i.times.map do
           item_property.random_value
         end
       end
 
-      def valid?
-        value.is_a?(Array) && value.all? do |item|
-          item_property.validate!(item)
-        end
+      def serialized_value
+        value.map { |item| item_property.serialize(item) }
+      end
+
+      def validated_value(param)
+        return param.map { |item| item_property.validate!(item) } if param.respond_to?(:map)
+
+        raise ValidationError
       end
 
       prepend Peroxide::Property::HasLength

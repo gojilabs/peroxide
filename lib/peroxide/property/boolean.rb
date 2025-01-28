@@ -62,26 +62,28 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid boolean"
       RANDOM_VALUE_OPTIONS = [true, false].freeze
 
-      def initialize(name, required: false)
-        super(name, required:)
-      end
-
-      def true?
-        value.in?(TRUE_VALUES)
-      end
-
-      def false?
-        value.in?(FALSE_VALUES)
-      end
-
       private
 
       def random_value
         RANDOM_VALUE_OPTIONS.sample
       end
 
-      def valid?
-        true? || false?
+      def serialized_value
+        true?(value)
+      end
+
+      def validated_value(param)
+        return param if true?(param) || false?(param)
+
+        raise ValidationError
+      end
+
+      def true?(param)
+        param.in?(TRUE_VALUES)
+      end
+
+      def false?(param)
+        param.in?(FALSE_VALUES)
       end
     end
   end

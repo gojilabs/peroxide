@@ -7,8 +7,9 @@ module Peroxide
   class Property
     class Float < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s is not a float"
+      DEFAULT_RANDOM_RANGE = (-1000.0..1000.0)
 
-      def initialize(name, range: nil, required: false)
+      def initialize(name, required: false, range: nil)
         self.range = range
 
         super(name, required:)
@@ -16,12 +17,18 @@ module Peroxide
 
       private
 
-      def random_value
-        random_value_from_range || rand(1000)
+      def serialized_value
+        value.to_f
       end
 
-      def valid?
-        value == value.to_s.to_f
+      def random_value
+        rand(DEFAULT_RANDOM_RANGE).to_f
+      end
+
+      def validated_value(param)
+        return param if param == param.to_s.to_f
+
+        raise ValidationError
       end
 
       prepend Peroxide::Property::HasRange

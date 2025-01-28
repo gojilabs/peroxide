@@ -3,27 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Peroxide::Property::Enum do
-  values = %w[red green blue]
+  let(:values) { %w[red green blue] }
   let(:name) { :test_enum }
   let(:enum) { described_class.new(name, values) }
 
-  describe '#valid?' do
-    context 'with valid enum value' do
-      values.each do |valid_value|
-        it "validates #{valid_value.inspect}" do
-          allow(enum).to receive(:value).and_return(valid_value)
-          expect(enum.send(:valid?)).to be true
-        end
-      end
-    end
-
-    context 'with invalid enum value' do
-      ['invalid', 'yellow', nil, 42, [], {}].each do |invalid_value|
-        it "invalidates #{invalid_value.inspect}" do
-          allow(enum).to receive(:value).and_return(invalid_value)
-          expect(enum.send(:valid?)).to be false
-        end
-      end
+  describe '#serialized_value' do
+    it 'converts value to string' do
+      allow(enum).to receive(:value).and_return(:red)
+      expect(enum.send(:serialized_value)).to eq('red')
     end
   end
 
@@ -31,6 +18,24 @@ RSpec.describe Peroxide::Property::Enum do
     it 'returns a random value from the enum values list' do
       result = enum.send(:random_value)
       expect(values).to include(result)
+    end
+  end
+
+  describe '#validated_value' do
+    context 'with valid enum value' do
+      %w[red green blue].each do |valid_value|
+        it "validates #{valid_value.inspect}" do
+          expect(enum.send(:validated_value, valid_value)).to eq(valid_value)
+        end
+      end
+    end
+
+    context 'with invalid enum value' do
+      ['invalid', 'yellow', nil, 42, [], {}].each do |invalid_value|
+        it "raises ValidationError for #{invalid_value.inspect}" do
+          expect { enum.send(:validated_value, invalid_value) }.to raise_error(Peroxide::Property::ValidationError)
+        end
+      end
     end
   end
 

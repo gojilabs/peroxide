@@ -7,21 +7,28 @@ module Peroxide
   class Property
     class String < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a string"
+      DEFAULT_MAX_LENGTH = 20
 
       def initialize(name, required: false, length: nil)
-        super(name, required:)
         self.length = length
+
+        super(name, required:)
       end
 
       private
 
-      def valid?
-        value.to_s == value
+      def serialized_value
+        value.to_s
+      end
+
+      def validated_value(param)
+        return param if param.to_s == param
+
+        raise ValidationError
       end
 
       def random_value
-        len = length? ? length.to_a.sample : rand(40).to_i
-        SecureRandom.hex(len)
+        SecureRandom.hex(rand(DEFAULT_MAX_LENGTH).to_i)
       end
 
       prepend Peroxide::Property::HasLength

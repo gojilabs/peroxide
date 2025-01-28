@@ -9,17 +9,26 @@ module Peroxide
 
       def initialize(name, values, required: false)
         super(name, required:)
-        @values = values
+
+        raise ConfigurationError, "'values' argument must have a #to_a method" unless values.respond_to?(:to_a)
+
+        @values = values.to_a
       end
 
       private
+
+      def serialized_value
+        value.to_s
+      end
 
       def random_value
         @values.sample
       end
 
-      def valid?
-        @values.include?(value)
+      def validated_value(param)
+        return param if @values.include?(param) && param.respond_to?(:to_s)
+
+        raise ValidationError
       end
 
       def error_message

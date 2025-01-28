@@ -6,25 +6,15 @@ module Peroxide
     class ConfigurationError < Error; end
     class ValidationError < Error; end
 
-    def self.sanitize!(properties, params)
-      {}.tap do |sanitized_params|
-        properties.each do |property|
-          param = params[property.name]
-          property.validate!(param)
-          sanitized_params[property.name] = param
-        end
-      end
-    end
+    ERROR_MESSAGE = "Property '%<name>s' is required but was not provided"
 
-    attr_reader :name, :value, :required
+    attr_reader :name, :value
 
     def initialize(name, required: false)
       raise ConfigurationError, 'Property name is required' unless name.to_s&.length&.positive?
 
       @name = name
       @required = required
-
-      puts "Property '#{name}' initialized, required: #{required}"
     end
 
     def required?
@@ -32,30 +22,40 @@ module Peroxide
     end
 
     def placeholder
-      return nil unless required? || Property::Boolean::RANDOM_VALUE_OPTIONS.sample
+      return nil unless placeholder_required?
 
       random_value
     end
 
-    def validate!(param)
-      @value = param
-      return @value if !required && !value || valid?
+    def serialize
+      return @serialize if defined?(@serialize)
+      return nil unless defined?(@value)
 
-      raise ValidationError, error_message
+      @serialize = serialized_value
+    end
+
+    def validate!(param)
+      raise ValidationError, error_message if required? && param.nil?
+
+      @value = validated_value(param)
     end
 
     private
+
+    def placeholder_required?
+      required? || Property::Boolean::RANDOM_VALUE_OPTIONS.sample
+    end
 
     def random_value
       raise NotImplementedError, 'random_value must be implemented by every child class of Peroxide::Property'
     end
 
-    def valid?
-      raise NotImplementedError, 'valid? must be implemented by every child class of Peroxide::Property'
+    def validated_value(_)
+      raise NotImplementedError, 'validated_value must be implemented by every child class of Peroxide::Property'
     end
 
-    def value_for_length_check
-      @value
+    def serialized_value
+      raise NotImplementedError, 'serialized_value must be implemented by every child class of Peroxide::Property'
     end
 
     def error_message

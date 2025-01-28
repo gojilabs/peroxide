@@ -9,26 +9,38 @@ module Peroxide
 
       def initialize(name, required: false)
         super(name, required:)
-        @children = []
+        @children = {}
       end
 
       def add_child(child)
-        @children << child
+        @children[child.name] = child
       end
 
       private
 
-      def random_value
-        {}.tap do |hash|
-          @children.each do |child|
-            hash[child.name] = child.random_value
+      def serialized_value
+        value.tap do |hash|
+          @children.each do |key, child|
+            hash[key] = child.serialized_value
           end
         end
       end
 
-      def valid?
-        value.is_a?(Hash) && @children.all? do |child|
-          child.validate!(value[child.name])
+      def random_value
+        {}.tap do |hash|
+          @children.each do |key, child|
+            hash[key] = child.random_value
+          end
+        end
+      end
+
+      def validated_value(param)
+        raise ValidationError unless param.respond_to?(:[])
+
+        {}.tap do |validated_param|
+          @children.each do |key, child|
+            validated_param[key] = child.validate!(param[key])
+          end
         end
       end
     end
