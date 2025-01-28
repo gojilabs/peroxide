@@ -32,18 +32,14 @@ RSpec.describe Peroxide::Property::HasLength do
       end
 
       it 'sets range length directly' do
-        instance.length = 5..10
-        expect(instance.length).to eq(5..10)
+        instance.length = 0..10
+        expect(instance.length).to eq(0..10)
       end
     end
 
     context 'with invalid length' do
       it 'raises InvalidLengthError for non-numeric input' do
         expect { instance.length = 'invalid' }.to raise_error(Peroxide::Property::HasLength::InvalidLengthError)
-      end
-
-      it 'raises InvalidLengthError for zero length' do
-        expect { instance.length = 0 }.to raise_error(Peroxide::Property::HasLength::InvalidLengthError)
       end
 
       it 'raises InvalidLengthError for negative length' do

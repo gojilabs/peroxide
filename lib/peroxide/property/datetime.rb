@@ -35,11 +35,12 @@ module Peroxide
       end
 
       def validated_value(param)
-        return param if param.respond_to?(:to_time)
-        return Time.iso8601(param.to_s) if param.respond_to?(:to_s)
+        time = Time.iso8601(param.to_s) if param.respond_to?(:to_s)
 
-        raise StandardError
-      rescue StandardError
+        raise StandardError unless time
+
+        time
+      rescue StandardError, ArgumentError
         raise ValidationError
       end
 

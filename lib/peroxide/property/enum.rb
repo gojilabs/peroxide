@@ -32,7 +32,7 @@ module Peroxide
       end
 
       def error_message
-        format(ERROR_MESSAGE, name:, value:, values:)
+        format(ERROR_MESSAGE, name:, value:, values: @values)
       end
     end
   end

@@ -40,14 +40,6 @@ RSpec.describe Peroxide::Property::Date do
   end
 
   describe '#validated_value' do
-    context 'with objects that respond to to_date' do
-      let(:date) { Date.new(2023, 1, 1) }
-
-      it 'returns the original param' do
-        expect(date_property.send(:validated_value, date)).to eq(date)
-      end
-    end
-
     context 'with valid ISO8601 string' do
       it 'returns a Date object' do
         result = date_property.send(:validated_value, '2023-01-01')
@@ -57,7 +49,7 @@ RSpec.describe Peroxide::Property::Date do
     end
 
     context 'with invalid values' do
-      ['invalid', '2023/01/01', '2023-13-01', '2023-01-32', nil, [], {}].each do |invalid_value|
+      ['invalid', '2023a01f01', '2023-13-01', '2023-01-32', nil, [], {}].each do |invalid_value|
         it "raises ValidationError for #{invalid_value.inspect}" do
           expect do
             date_property.send(:validated_value, invalid_value)

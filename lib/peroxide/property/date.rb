@@ -30,11 +30,12 @@ module Peroxide
       end
 
       def validated_value(param)
-        return param.to_date if param.respond_to?(:to_date)
-        return ::Date.iso8601(param.to_s) if param.respond_to?(:to_s)
+        date = ::Date.iso8601(param.to_s) if param.respond_to?(:to_s)
 
-        raise StandardError
-      rescue StandardError
+        raise StandardError unless date
+
+        date
+      rescue StandardError, ArgumentError
         raise ValidationError
       end
 

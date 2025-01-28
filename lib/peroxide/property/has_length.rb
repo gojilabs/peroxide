@@ -12,26 +12,26 @@ module Peroxide
       def length=(length)
         return if length.nil?
 
-        @length =
+        potential_length =
           if length.is_a?(Range)
             length
           else
-            (length.to_i..length.to_i)
+            (length..length)
           end
 
-        raise InvalidLengthError if @length.min.negative?
+        raise InvalidLengthError if potential_length.min.negative?
+
+        @length = potential_length
       rescue StandardError
         raise InvalidLengthError
       end
 
       def length?
-        defined?(@length) && length
+        !!defined?(@length)
       end
 
       def check_length(param)
-        return true unless length?
-
-        length.include?(param.length)
+        !length? || length.include?(param.length)
       end
 
       def random_value

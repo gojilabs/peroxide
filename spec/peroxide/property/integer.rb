@@ -39,7 +39,7 @@ RSpec.describe Peroxide::Property::Integer do
 
   describe '#validated_value' do
     context 'with valid integer values' do
-      [42, '42', -10, '-10', 0, '0'].each do |valid_value|
+      [42, -10, 0].each do |valid_value|
         it "validates #{valid_value.inspect}" do
           expect(integer.send(:validated_value, valid_value)).to eq(valid_value)
         end

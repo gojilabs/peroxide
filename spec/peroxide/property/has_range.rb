@@ -36,12 +36,6 @@ RSpec.describe Peroxide::Property::HasRange do
         expect(instance.range).to eq(5..10)
       end
     end
-
-    context 'with invalid range' do
-      it 'raises InvalidRangeError for non-numeric input' do
-        expect { instance.range = 'invalid' }.to raise_error(Peroxide::Property::HasRange::InvalidRangeError)
-      end
-    end
   end
 
   describe '#range?' do

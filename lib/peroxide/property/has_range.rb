@@ -16,24 +16,23 @@ module Peroxide
           if range.is_a?(Range)
             range
           else
-            (range.to_i..range.to_i)
+            val = validated_value(range)
+            (val..val)
           end
       rescue StandardError
         raise InvalidRangeError
       end
 
       def range?
-        defined?(@range) && range
+        !!defined?(@range)
       end
 
       def check_range(param)
-        return true unless range?
-
-        range.include?(param)
+        !range? || range.include?(param)
       end
 
       def random_value
-        return range.to_a.sample if range?
+        return rand(range) if range?
 
         super
       end
