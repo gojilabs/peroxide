@@ -35,13 +35,15 @@ module Peroxide
       end
 
       def validated_value(param)
-        raise ValidationError unless param.respond_to?(:[])
+        raise StandardError unless param.respond_to?(:[])
 
         {}.tap do |validated_param|
           @children.each do |key, child|
             validated_param[key] = child.validate!(param[key])
           end
         end
+      rescue StandardError, TypeError
+        raise ValidationError
       end
     end
   end

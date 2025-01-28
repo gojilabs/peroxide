@@ -7,7 +7,8 @@ module Peroxide
   class Property
     class String < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a string"
-      DEFAULT_MAX_LENGTH = 20
+      DEFAULT_MAX_LENGTH = 140
+      ALPHABET = [*('a'..'z'), *('A'..'Z')].shuffle
 
       def initialize(name, required: false, length: nil)
         self.length = length
@@ -28,7 +29,7 @@ module Peroxide
       end
 
       def random_value
-        SecureRandom.hex(rand(DEFAULT_MAX_LENGTH).to_i)
+        ::Array.new(rand(DEFAULT_MAX_LENGTH)) { ALPHABET.sample }.join
       end
 
       prepend Peroxide::Property::HasLength

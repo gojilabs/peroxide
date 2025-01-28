@@ -39,7 +39,7 @@ RSpec.describe Peroxide::Property::Float do
 
   describe '#validated_value' do
     context 'with valid float values' do
-      [42.5, '42.5', -10.3, '-10.3', 0.0, '0.0'].each do |valid_value|
+      [42.5, -10.3, 0.0, 13.13E6].each do |valid_value|
         it "validates #{valid_value.inspect}" do
           expect(float.send(:validated_value, valid_value)).to eq(valid_value)
         end
@@ -47,7 +47,7 @@ RSpec.describe Peroxide::Property::Float do
     end
 
     context 'with invalid float values' do
-      ['invalid', nil, [], {}, 'abc'].each do |invalid_value|
+      ['invalid', nil, [], {}, Date.today, '34', 'abc'].each do |invalid_value|
         it "raises ValidationError for #{invalid_value.inspect}" do
           expect { float.send(:validated_value, invalid_value) }.to raise_error(Peroxide::Property::ValidationError)
         end
