@@ -23,17 +23,17 @@ module Peroxide
 
       def random_value
         ::Date.new(
-          rand(1900..Date.today.year + 10),
+          rand(1900..::Date.today.year + 10),
           rand(1..12),
           rand(1..28)
         )
       end
 
       def validated_value(param)
-        return param if param.respond_to?(:to_date)
+        return param.to_date if param.respond_to?(:to_date)
         return ::Date.iso8601(param.to_s) if param.respond_to?(:to_s)
 
-        raise ValidationError
+        raise StandardError
       rescue StandardError
         raise ValidationError
       end

@@ -24,7 +24,7 @@ module Peroxide
 
       def random_value
         Time.new(
-          rand(1900..Date.today.year + 10),
+          rand(1900..::Date.today.year + 10),
           rand(1..12),
           rand(1..28),
           rand(0..23),
@@ -38,7 +38,7 @@ module Peroxide
         return param if param.respond_to?(:to_time)
         return Time.iso8601(param.to_s) if param.respond_to?(:to_s)
 
-        raise ValidationError
+        raise StandardError
       rescue StandardError
         raise ValidationError
       end

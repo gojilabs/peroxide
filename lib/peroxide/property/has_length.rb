@@ -39,7 +39,7 @@ module Peroxide
 
         return raw_value unless length?
 
-        raw_value[0..length.max]
+        raw_value[0...length.max]
       end
 
       def validated_value(param)
