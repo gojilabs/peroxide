@@ -5,31 +5,33 @@ module Peroxide
     module HasLength
       class LengthIsTooShortError < Error; end
 
-      def self.included(base)
-        base.class_eval do
-          attr_reader :length
+      def length
+        @length
+      end
 
-          def length=(length)
-            return if length.nil?
+      def length=(length)
+        return if length.nil?
 
-            @length =
-              if length.is_a?(Range)
-                length
-              else
-                (length.to_i..length.to_i)
-              end
-
-            raise LengthIsTooShortError if @length.min < 1
+        @length =
+          if length.is_a?(Range)
+            length
+          else
+            (length.to_i..length.to_i)
           end
 
-          def length?
-            defined?(@length)
-          end
+        raise LengthIsTooShortError if @length.min < 1
+      end
 
-          def check_length
-            !length? || @length.include?(value_for_length_check.length)
-          end
-        end
+      def length?
+        defined?(@length)
+      end
+
+      def check_length
+        !length? || @length.include?(value.length)
+      end
+
+      def valid?
+        super && check_length
       end
     end
   end

@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-require 'active_support/core_ext/time'
 require_relative '../property'
-require_relative '../property/has_range'
+require_relative 'has_range'
 
 module Peroxide
   class Property
     class Datetime < Peroxide::Property
-      include Peroxide::Property::HasRange
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' must be either a valid Time object, an integer representing a Unix timestamp, or a string in the format 'YYYY-MM-DD HH:MM:SSZ'"
 
       def initialize(name, range: nil, required: false)
@@ -19,7 +17,7 @@ module Peroxide
 
       def random_value
         random_value_from_range || Time.new(
-          rand(1900..Time.now.year + 10),
+          rand(1900..Date.today.year + 10),
           rand(1..12),
           rand(1..28),
           rand(0..23),
@@ -29,7 +27,7 @@ module Peroxide
       end
 
       def valid?
-        @datetime ||=
+        @valid ||=
           case value
           when Time
             value
@@ -41,9 +39,9 @@ module Peroxide
 
             Time.at(numeric_value)
           end
-
-        @valid ||= @datetime && check_range
       end
+
+      prepend Peroxide::Property::HasRange
     end
   end
 end

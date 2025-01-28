@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Peroxide
   class Property
     class Error < Peroxide::Error; end
@@ -37,9 +39,9 @@ module Peroxide
 
     def validate!(param)
       @value = param
-      raise ValidationError, error_message unless (!required? && (!value || value.empty?)) || valid?
+      return @value if !required && !value || valid?
 
-      @value
+      raise ValidationError, error_message
     end
 
     private

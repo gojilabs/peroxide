@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require 'rack/utils'
+require 'active_support/core_ext/string'
+require 'active_support/core_ext/array'
+require 'active_support/core_ext/hash'
+
 require_relative 'property/array'
 require_relative 'property/boolean'
 require_relative 'property/date'
@@ -48,8 +52,8 @@ module Peroxide
         @properties << property
       elsif @parent.respond_to?(:add_child)
         @parent.add_child(property)
-      elsif @parent.respond_to?(:child=)
-        @parent.child = property
+      elsif @parent.respond_to?(:item_property=)
+        @parent.item_property = property
       end
 
       property
@@ -77,7 +81,7 @@ module Peroxide
 
       {}.tap do |values|
         properties.each do |property|
-          values[property.name] = property.random_value
+          values[property.name] = property.send(:random_value)
         end
       end
     end

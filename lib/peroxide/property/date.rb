@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 require_relative '../property'
-require_relative '../property/has_range'
+require_relative 'has_range'
 
 module Peroxide
   class Property
     class Date < Peroxide::Property
-      include Peroxide::Property::HasRange
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid date or is not a string in the format 'YYYY-MM-DD'"
 
       def initialize(name, range: nil, required: false)
@@ -25,11 +24,12 @@ module Peroxide
       end
 
       def valid?
-        @date ||= value.is_a?(Date) ? value : ::Date.parse(value)
-        @valid ||= @date && check_range
+        @valid ||= value.respond_to?(:to_date) ? value.to_date : ::Date.parse(value)
       rescue ::Date::Error, TypeError
-        raise ValidationError, error_message
+        false
       end
+
+      prepend Peroxide::Property::HasRange
     end
   end
 end

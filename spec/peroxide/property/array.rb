@@ -5,19 +5,19 @@ require 'spec_helper'
 RSpec.describe Peroxide::Property::Array do
   let(:name) { :test_array }
   let(:array) { described_class.new(name) }
-  let(:child) { double('child_property') }
+  let(:item_property) { double('item_property') }
 
   before do
-    array.child = child
+    array.item_property = item_property
   end
 
   describe '#random_value' do
     context 'when length is not specified' do
       before do
-        allow(child).to receive(:random_value).and_return('test')
+        allow(item_property).to receive(:random_value).and_return('test')
       end
 
-      it 'generates an array of random length with child values' do
+      it 'generates an array of random length with item_property values' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
         expect(result.all? { |item| item == 'test' }).to be true
@@ -28,10 +28,10 @@ RSpec.describe Peroxide::Property::Array do
       let(:array) { described_class.new(name, length: 3) }
 
       before do
-        allow(child).to receive(:random_value).and_return('test')
+        allow(item_property).to receive(:random_value).and_return('test')
       end
 
-      it 'generates an array of specified length with child values' do
+      it 'generates an array of specified length with item_property values' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
         expect(result.length).to eq(3)
@@ -50,7 +50,7 @@ RSpec.describe Peroxide::Property::Array do
       let(:value) { [1, 2, 3] }
 
       before do
-        allow(child).to receive(:validate!).and_return(true)
+        allow(item_property).to receive(:validate!).and_return(true)
       end
 
       it 'returns true' do
@@ -78,11 +78,11 @@ RSpec.describe Peroxide::Property::Array do
       end
     end
 
-    context 'when child validation fails' do
+    context 'when item_property validation fails' do
       let(:value) { [1, 2, 3] }
 
       before do
-        allow(child).to receive(:validate!).and_return(false)
+        allow(item_property).to receive(:validate!).and_return(false)
       end
 
       it 'returns false' do

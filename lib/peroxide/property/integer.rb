@@ -1,27 +1,15 @@
 # frozen_string_literal: true
 
-require_relative 'has_length'
-require_relative 'has_range'
 require_relative '../property'
+require_relative 'has_range'
 
 module Peroxide
   class Property
     class Integer < Peroxide::Property
-      include Peroxide::Property::HasLength
-      include Peroxide::Property::HasRange
-
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an integer"
 
-      def initialize(name, required: false, range: nil, length: nil)
+      def initialize(name, required: false, range: nil)
         self.range = range
-        self.length = length
-
-        if length? && range?
-          raise MaximumValueIsTooShortError if range_max_length < length
-          raise MinimumValueIsTooShortError if range_min_length < length
-          raise MaximumValueIsTooLongError if range_max_length > length
-          raise MinimumValueIsTooLongError if range_min_length > length
-        end
 
         super(name, required:)
       end
@@ -33,12 +21,10 @@ module Peroxide
       end
 
       def valid?
-        value_for_length_check.to_i == value && check_range && check_length
+        value.to_s.to_i == value
       end
 
-      def value_for_length_check
-        value.to_s
-      end
+      prepend Peroxide::Property::HasRange
     end
   end
 end

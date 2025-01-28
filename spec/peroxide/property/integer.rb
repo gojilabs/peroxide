@@ -43,20 +43,6 @@ RSpec.describe Peroxide::Property::Integer do
       end
     end
 
-    context 'with length constraint' do
-      let(:integer) { described_class.new(name, length: 3) }
-
-      it 'validates integers of correct length' do
-        allow(integer).to receive(:value).and_return(123)
-        expect(integer.send(:valid?)).to be true
-      end
-
-      it 'invalidates integers of incorrect length' do
-        allow(integer).to receive(:value).and_return(1234)
-        expect(integer.send(:valid?)).to be false
-      end
-    end
-
     context 'with range constraint' do
       let(:integer) { described_class.new(name, range: 1..100) }
 
@@ -69,13 +55,6 @@ RSpec.describe Peroxide::Property::Integer do
         allow(integer).to receive(:value).and_return(101)
         expect(integer.send(:valid?)).to be false
       end
-    end
-  end
-
-  describe '#value_for_length_check' do
-    it 'converts value to string representation' do
-      allow(integer).to receive(:value).and_return(42)
-      expect(integer.send(:value_for_length_check)).to eq('42')
     end
   end
 
@@ -93,32 +72,6 @@ RSpec.describe Peroxide::Property::Integer do
 
       it 'sets required to false' do
         expect(integer.required?).to be false
-      end
-    end
-
-    context 'with incompatible length and range' do
-      it 'raises error when range max length is less than required length' do
-        expect {
-          described_class.new(name, range: 1..9, length: 2)
-        }.to raise_error(Peroxide::Property::HasRange::MaximumValueIsTooShortError)
-      end
-
-      it 'raises error when range min length is less than required length' do
-        expect {
-          described_class.new(name, range: 1..100, length: 3)
-        }.to raise_error(Peroxide::Property::HasRange::MinimumValueIsTooShortError)
-      end
-
-      it 'raises error when range max length is greater than required length' do
-        expect {
-          described_class.new(name, range: 1..1000, length: 2)
-        }.to raise_error(Peroxide::Property::HasRange::MaximumValueIsTooLongError)
-      end
-
-      it 'raises error when range min length is greater than required length' do
-        expect {
-          described_class.new(name, range: 100..999, length: 2)
-        }.to raise_error(Peroxide::Property::HasRange::MinimumValueIsTooLongError)
       end
     end
   end
