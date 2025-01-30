@@ -9,10 +9,10 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s is not a float"
       DEFAULT_RANDOM_RANGE = (-1000.0..1000.0)
 
-      def initialize(name, required: false, range: nil)
+      def initialize(name, required: false, range: nil, array_root: false)
         self.range = range
 
-        super(name, required:)
+        super(name, required:, array_root:)
       end
 
       private

@@ -10,8 +10,8 @@ module Peroxide
 
     attr_reader :name, :value
 
-    def initialize(name, required: false)
-      raise ConfigurationError, 'Property name is required' unless name.to_s&.length&.positive?
+    def initialize(name, required: false, array_root: false)
+      raise ConfigurationError, 'Property name is required' unless array_root || name.to_s&.length&.positive?
 
       @name = name
       @required = required

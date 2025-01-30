@@ -141,7 +141,7 @@ RSpec.describe Peroxide::Sanitizer do
 
     it 'registers array property' do
       property = described_class.array('items') do
-        described_class.string('name')
+        described_class.string
       end
       expect(property).to be_a(Peroxide::Property::Array)
     end

@@ -7,8 +7,8 @@ module Peroxide
     class Enum < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not in the enum values list '%<values>s'"
 
-      def initialize(name, values, required: false)
-        super(name, required:)
+      def initialize(name, values, required: false, array_root: false)
+        super(name, required:, array_root:)
 
         raise ConfigurationError, "'values' argument must have a #to_a method" unless values.respond_to?(:to_a)
 

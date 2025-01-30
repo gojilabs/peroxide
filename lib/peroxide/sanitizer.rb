@@ -54,6 +54,7 @@ module Peroxide
         @parent.item_property = property
       end
 
+      @array_root = false
       property
     end
 
@@ -61,7 +62,7 @@ module Peroxide
       properties = Util.request_properties_for(@actions, params)
       {}.tap do |values|
         properties.each do |property|
-          values[property.name] = property.validate!(params)
+          values[property.name] = property.validate!(params[property.name])
         end
       end
     end
@@ -69,7 +70,7 @@ module Peroxide
     def self.sanitize_response!(params, code)
       {}.tap do |values|
         Util.response_properties_for(@actions, params, code).each do |property|
-          values[property.name] = property.validate!(params)
+          values[property.name] = property.validate!(params[property.name])
         end
       end
     end
@@ -87,37 +88,35 @@ module Peroxide
 
     def self.array(name = nil, length: nil, required: false)
       old_parent = @parent
+      @array_root = true
       @parent = register_property(Peroxide::Property::Array.new(name, length:, required:))
-      old_array_name = @array_name
-      @array_name = name
 
       yield if block_given?
       @parent = old_parent
-      @array_name = old_array_name
     end
 
     def self.boolean(name = nil, required: false)
-      register_property(Peroxide::Property::Boolean.new(name, required:))
+      register_property(Peroxide::Property::Boolean.new(name, required:, array_root: @array_root))
     end
 
     def self.date(name = nil, range: nil, required: false)
-      register_property(Peroxide::Property::Date.new(name, required:, range:))
+      register_property(Peroxide::Property::Date.new(name, required:, range:, array_root: @array_root))
     end
 
     def self.datetime(name = nil, range: nil, required: false)
-      register_property(Peroxide::Property::Datetime.new(name, required:, range:))
+      register_property(Peroxide::Property::Datetime.new(name, required:, range:, array_root: @array_root))
     end
 
     def self.enum(name = nil, values, required: false)
-      register_property(Peroxide::Property::Enum.new(name, values, required:))
+      register_property(Peroxide::Property::Enum.new(name, values, required:, array_root: @array_root))
     end
 
     def self.float(name = nil, range: nil, required: false)
-      register_property(Peroxide::Property::Float.new(name, range:, required:))
+      register_property(Peroxide::Property::Float.new(name, range:, required:, array_root: @array_root))
     end
 
     def self.integer(name = nil, range: nil, required: false)
-      register_property(Peroxide::Property::Integer.new(name, range:, required:))
+      register_property(Peroxide::Property::Integer.new(name, range:, required:, array_root: @array_root))
     end
 
     def self.no_content
@@ -126,14 +125,14 @@ module Peroxide
 
     def self.object(name = nil, required: false)
       old_parent = @parent
-      @parent = register_property(Peroxide::Property::Object.new(name, required:))
+      @parent = register_property(Peroxide::Property::Object.new(name, required:, array_root: @array_root))
 
       yield if block_given?
       @parent = old_parent
     end
 
     def self.string(name = nil, length: nil, required: false)
-      register_property(Peroxide::Property::String.new(name, length:, required:))
+      register_property(Peroxide::Property::String.new(name, length:, required:, array_root: @array_root))
     end
   end
 end
