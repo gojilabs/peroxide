@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport', '>= 5.0', '< 8'
   spec.add_dependency 'rack', '>= 2.0', '< 4'
 
-  spec.add_development_dependency 'pry-byebug'
+  spec.add_development_dependency 'debug'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '>= 1.0'
   spec.add_development_dependency 'ruby-lsp'

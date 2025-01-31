@@ -54,7 +54,6 @@ module Peroxide
         @parent.item_property = property
       end
 
-      @array_root = false
       property
     end
 
@@ -88,11 +87,15 @@ module Peroxide
 
     def self.array(name = nil, length: nil, required: false)
       old_parent = @parent
-      @array_root = true
       @parent = register_property(Peroxide::Property::Array.new(name, length:, required:))
+      property = @parent
+      @array_root = true
 
       yield if block_given?
+      @array_root = false
       @parent = old_parent
+
+      property
     end
 
     def self.boolean(name = nil, required: false)
@@ -126,9 +129,10 @@ module Peroxide
     def self.object(name = nil, required: false)
       old_parent = @parent
       @parent = register_property(Peroxide::Property::Object.new(name, required:, array_root: @array_root))
-
+      property = @parent
       yield if block_given?
       @parent = old_parent
+      property
     end
 
     def self.string(name = nil, length: nil, required: false)

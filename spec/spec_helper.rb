@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-require 'peroxide'
+require 'debug'
 require 'simplecov'
 
 SimpleCov.start
+
+require 'peroxide'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

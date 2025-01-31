@@ -106,7 +106,7 @@ RSpec.describe Peroxide::Sanitizer do
       before do
         described_class.action('test') do
           described_class.response(200) do
-            described_class.string('name')
+            described_class.string('name', required: true)
           end
         end
       end
