@@ -39,7 +39,7 @@ RSpec.describe Peroxide::Property::Integer do
 
   describe '#validated_value' do
     context 'with valid integer values' do
-      [42, -10, 0].each do |valid_value|
+      [42, -10, 0, '42', '-10', '0'].each do |valid_value|
         it "validates #{valid_value.inspect}" do
           expect(integer.send(:validated_value, valid_value)).to eq(valid_value)
         end
@@ -47,7 +47,7 @@ RSpec.describe Peroxide::Property::Integer do
     end
 
     context 'with invalid integer values' do
-      ['invalid', '42.5', nil, [], {}, 3.14].each do |invalid_value|
+      ['invalid', '42.5', nil, [], {}, 3.14, '3.14'].each do |invalid_value|
         it "raises ValidationError for #{invalid_value.inspect}" do
           expect { integer.send(:validated_value, invalid_value) }.to raise_error(Peroxide::Property::ValidationError)
         end

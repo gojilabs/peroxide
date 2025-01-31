@@ -9,4 +9,5 @@ end
 
 require_relative 'peroxide/property'
 require_relative 'peroxide/sanitizer'
+require_relative 'peroxide/controller'
 require_relative 'peroxide/version'

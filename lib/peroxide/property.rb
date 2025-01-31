@@ -37,6 +37,7 @@ module Peroxide
     def validate!(param)
       raise ValidationError, error_message if required? && param.nil?
 
+      puts param.inspect
       @value = validated_value(param)
     end
 
