@@ -21,7 +21,7 @@ module Peroxide
 
       def random_value
         rand(DEFAULT_MAX_LENGTH).to_i.times.map do
-          item_property.random_value
+          item_property.placeholder
         end
       end
 

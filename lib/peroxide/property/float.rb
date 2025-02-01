@@ -26,9 +26,8 @@ module Peroxide
       end
 
       def validated_value(param)
-        if param.is_a?(::Float) || param.is_a?(::String) && param.to_f.to_s == param || param.is_a?(::Integer)
-          return param
-        end
+        return param if param.is_a?(::Float) || param.is_a?(::Integer)
+        return param.to_f if param.is_a?(::String) && param.to_f.to_s == param
 
         raise StandardError
       rescue StandardError

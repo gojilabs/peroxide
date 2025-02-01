@@ -10,15 +10,15 @@ module Peroxide
       @sanitize_request ||= sanitizer_class.sanitize_request!(params)
     end
 
-    def sanitized_response(body, status)
+    def render_sanitized_response(body, status)
       validated_body = @sanitizer_class.sanitize_response!(body, status)
       return head status if !validated_body || validated_body.empty?
 
       render json: validated_body, status:
     end
 
-    def placeholder_response(status)
-      sanitizer_class.placeholder_response(status)
+    def render_placeholder_response(status)
+      render(json: sanitizer_class.placeholder_response!(params, status), status:)
     end
 
     def sanitized_params

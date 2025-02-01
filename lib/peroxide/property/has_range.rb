@@ -31,10 +31,24 @@ module Peroxide
         !range? || range.include?(param)
       end
 
-      def random_value
-        return rand(range) if range?
+      def range_min
+        range.min
+      rescue StandardError
+        nil
+      end
 
-        super
+      def range_max
+        range.max
+      rescue StandardError
+        nil
+      end
+
+      def random_value
+        return rand(range) if range_min && range_max
+
+        val = super until check_range(val)
+
+        val
       end
 
       def validated_value(param)

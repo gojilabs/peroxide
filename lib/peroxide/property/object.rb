@@ -29,7 +29,7 @@ module Peroxide
       def random_value
         {}.tap do |hash|
           @children.each do |key, child|
-            hash[key] = child.random_value
+            hash[key] = child.placeholder
           end
         end
       end
