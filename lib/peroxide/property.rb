@@ -35,9 +35,13 @@ module Peroxide
     end
 
     def validate!(param)
-      raise ValidationError, error_message if required? && param.nil?
-
-      @value = validated_value(param)
+      @value =
+        if param.nil?
+          raise ValidationError, error_message if required?
+          nil
+        else
+          validated_value(param)
+        end
     end
 
     private
