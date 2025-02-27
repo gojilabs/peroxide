@@ -5,57 +5,47 @@ module Peroxide
     module HasRange
       class InvalidRangeError < Error; end
 
-      def range
-        @range
-      end
+      attr_reader :range
 
-      def range=(range)
-        return if range.nil?
+      def range=(range_val)
+        return if range_val.nil?
 
         @range =
-          if range.is_a?(Range)
-            range
+          if range_val.is_a?(Range)
+            range_val
           else
-            val = validated_value(range)
+            val = validated_value(range_val)
             (val..val)
           end
       rescue StandardError
         raise InvalidRangeError
       end
 
-      def range?
-        !!defined?(@range)
-      end
-
-      def check_range(param)
-        !range? || range.include?(param)
-      end
-
       def range_min
-        range.min
-      rescue StandardError
-        nil
+        @range_min ||= range&.min
       end
 
       def range_max
-        range.max
-      rescue StandardError
-        nil
+        @range_max ||= range&.max
       end
 
       def random_value
-        return rand(range) if range_min && range_max
-
-        val = super until check_range(val)
-
-        val
+        if range_min.nil? && range_max.nil?
+          super
+        elsif range_min.nil?
+          rand(range_max)
+        else
+          rand(range)
+        end
       end
 
       def validated_value(param)
         validated_param = super(param)
-        return validated_param if check_range(validated_param)
+        within_range = (range_min.nil? || range_min < validated_param) && (range_max.nil? || range_max > validated_param)
 
-        raise ValidationError
+        raise ValidationError unless within_range
+
+        validated_param
       end
     end
   end

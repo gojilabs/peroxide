@@ -7,9 +7,9 @@ module Peroxide
     class Object < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a hash"
 
-      def initialize(name, required: false, array_root: false)
+      def initialize(name, required: false, array_root: false, children: {})
         super(name, required:, array_root:)
-        @children = {}
+        @children = children
       end
 
       def add_child(child)

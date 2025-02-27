@@ -5,34 +5,40 @@ require 'spec_helper'
 RSpec.describe Peroxide::Property::Array do
   let(:name) { :test_array }
   let(:array) { described_class.new(name) }
-  let(:item_property) { double('item_property') }
+  let(:item_property) { Peroxide::Property::String.new(:test) }
 
   before do
     array.item_property = item_property
   end
 
   describe '#random_value' do
-    before do
-      allow(item_property).to receive(:random_value).and_return('test')
-    end
-
     context 'when length is not specified' do
       it 'generates an array of random values up to DEFAULT_MAX_LENGTH' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
         expect(result.length).to be <= described_class::DEFAULT_MAX_LENGTH
-        expect(result.all? { |item| item == 'test' }).to be true
       end
     end
 
-    context 'when length is specified' do
-      let(:array) { described_class.new(name, length: 3) }
+    context 'when length is a range' do
+      let(:array) { described_class.new(name, length: 2..4) }
 
       it 'generates an array with length within the specified range' do
         result = array.send(:random_value)
         expect(result).to be_an(Array)
-        expect(result.length).to be <= 3
-        expect(result.all? { |item| item == 'test' }).to be true
+        expect(result.length).to be >= array.length.min
+        expect(result.length).to be <= array.length.max
+      end
+    end
+
+    context 'when length is static' do
+      let(:array) { described_class.new(name, length: 3) }
+
+      it 'generates an array with length of that value' do
+        result = array.send(:random_value)
+        expect(result).to be_an(Array)
+        expect(result.length).to eq array.length.min
+        expect(result.length).to eq array.length.max
       end
     end
   end
@@ -48,7 +54,7 @@ RSpec.describe Peroxide::Property::Array do
     end
 
     it 'serializes each item in the array' do
-      expect(array.send(:serialized_value)).to eq(['1', '2', '3'])
+      expect(array.send(:serialized_value)).to eq(%w[1 2 3])
     end
   end
 

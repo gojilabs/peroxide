@@ -25,7 +25,7 @@ RSpec.describe Peroxide::Property::Object do
   describe '#random_value' do
     before do
       allow(child).to receive(:name).and_return(:child_name)
-      allow(child).to receive(:random_value).and_return('test_value')
+      allow(child).to receive(:placeholder).and_return('test_value')
       object.add_child(child)
     end
 

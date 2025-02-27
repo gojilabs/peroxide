@@ -5,48 +5,61 @@ module Peroxide
     module HasLength
       class InvalidLengthError < ValidationError; end
 
-      def length
-        @length
-      end
+      attr_reader :length
 
-      def length=(length)
-        return if length.nil?
+      def length=(length_val)
+        return if length_val.nil?
 
-        potential_length =
-          if length.is_a?(Range)
-            length
+        val =
+          if length_val.is_a?(Range)
+            length_val
+          elsif length_val.to_i == length_val
+            (length_val..length_val)
           else
-            (length..length)
+            raise InvalidLengthError
           end
 
-        raise InvalidLengthError if potential_length.min.negative?
+        raise InvalidLengthError if val.min.negative? || val.max.negative? || val.min > val.max
 
-        @length = potential_length
+        @length = val
       rescue StandardError
         raise InvalidLengthError
       end
 
-      def length?
-        !!defined?(@length)
+      def length_min
+        @length_min ||= length&.min
       end
 
-      def check_length(param)
-        !length? || length.include?(param.length)
+      def length_max
+        @length_max ||= length&.max
       end
 
       def random_value
-        raw_value = super
+        random_length = random_value_length
+        return super if random_length.nil?
 
-        return raw_value unless length?
+        super[0..random_length]
+      end
 
-        raw_value[0...length.max]
+      def random_value_length
+        if length_min.nil? && length_max.nil?
+          nil
+        elsif length_max.nil?
+          length_min + rand(100)
+        else
+          rand(length)
+        end
       end
 
       def validated_value(param)
         validated_param = super(param)
-        return validated_param if check_length(validated_param)
+        vp_length = validated_param&.length || 0
 
-        raise InvalidLengthError
+        valid = (length_min.nil? || length_min <= vp_length) && (length_max.nil? || length_max >= vp_length)
+
+        raise InvalidLengthError unless valid
+
+        validated_param
       end
     end
   end

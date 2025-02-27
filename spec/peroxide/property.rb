@@ -154,12 +154,24 @@ RSpec.describe Peroxide::Property do
     context 'when required is false' do
       let(:property) { described_class.new(name, required: false) }
 
-      before do
-        stub_const('Peroxide::Property::Boolean::RANDOM_VALUE_OPTIONS', [true])
+      context 'when fifty_fifty? is true' do
+        before do
+          allow(property).to receive(:fifty_fifty?).and_return(true)
+        end
+
+        it 'returns true' do
+          expect(property.send(:placeholder_required?)).to be true
+        end
       end
 
-      it 'returns random boolean value' do
-        expect(property.send(:placeholder_required?)).to be true
+      context 'when fifty_fifty? is false' do
+        before do
+          allow(property).to receive(:fifty_fifty?).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(property.send(:placeholder_required?)).to be false
+        end
       end
     end
   end

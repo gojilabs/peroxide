@@ -6,37 +6,35 @@ module Peroxide
   module Controller
     extend ActiveSupport::Concern
 
-    def sanitize_request!
-      @sanitize_request ||= sanitizer_class.sanitize_request!(params)
-    end
+    included do
+      before_action :sanitize_request!
 
-    def render_sanitized_response(body, status)
-      validated_body = @sanitizer_class.sanitize_response!(body, status)
-      return head status if !validated_body || validated_body.empty?
+      def sanitizer_class
+        return @sanitizer_class if defined?(@sanitizer_class)
 
-      render json: validated_body, status:
-    end
+        class_name = self.class.name
 
-    def render_placeholder_response(status)
-      render(json: sanitizer_class.placeholder_response!(params, status), status:)
-    end
+        name = "#{class_name[0...class_name.rindex("Controller")]}Sanitizer"
+        @sanitizer_class = name.constantize
+      end
 
-    def sanitized_params
-      @sanitize_request
-    end
+      def sanitize_request!
+        @sanitize_request ||= sanitizer_class.sanitize_request!(params)
+      end
 
-    def self.included(base)
-      base.class_eval do
-        before_action :sanitize_request!
+      def render_sanitized_response(body, status)
+        validated_body = @sanitizer_class.sanitize_response!(body, status)
+        return head status if !validated_body || validated_body.empty?
 
-        def sanitizer_class
-          return @sanitizer_class if defined?(@sanitizer_class)
+        render json: validated_body, status:
+      end
 
-          class_name = self.class.name
+      def render_placeholder_response(status)
+        render(json: sanitizer_class.placeholder_response!(params, status), status:)
+      end
 
-          name = "#{class_name[0...class_name.rindex("Controller")]}Sanitizer"
-          @sanitizer_class = name.constantize
-        end
+      def sanitized_params
+        @sanitize_request
       end
     end
   end

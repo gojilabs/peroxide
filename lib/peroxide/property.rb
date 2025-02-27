@@ -13,6 +13,8 @@ module Peroxide
     def initialize(name, required: false, array_root: false)
       raise ConfigurationError, 'Property name is required' unless array_root || name.to_s&.length&.positive?
 
+      puts "Initializing property #{name} with required: #{required}"
+
       @name = name
       @required = required
     end
@@ -22,9 +24,7 @@ module Peroxide
     end
 
     def placeholder
-      return nil unless placeholder_required?
-
-      random_value
+      placeholder_required? ? random_value : nil
     end
 
     def serialize
@@ -38,6 +38,7 @@ module Peroxide
       @value =
         if param.nil?
           raise ValidationError, error_message if required?
+
           nil
         else
           validated_value(param)
@@ -47,7 +48,11 @@ module Peroxide
     private
 
     def placeholder_required?
-      required? || Property::Boolean::RANDOM_VALUE_OPTIONS.sample
+      required? || fifty_fifty? # 50/50 chance of including random value in required properties
+    end
+
+    def fifty_fifty?
+      rand > 0.5
     end
 
     def random_value

@@ -38,42 +38,6 @@ RSpec.describe Peroxide::Property::HasRange do
     end
   end
 
-  describe '#range?' do
-    context 'when range is set' do
-      before { instance.range = 3 }
-
-      it 'returns true' do
-        expect(instance.range?).to be true
-      end
-    end
-
-    context 'when range is not set' do
-      it 'returns false' do
-        expect(instance.range?).to be false
-      end
-    end
-  end
-
-  describe '#check_range' do
-    context 'when range is not set' do
-      it 'returns true' do
-        expect(instance.check_range(100)).to be true
-      end
-    end
-
-    context 'when range is set' do
-      before { instance.range = 1..10 }
-
-      it 'returns true for values within range' do
-        expect(instance.check_range(5)).to be true
-      end
-
-      it 'returns false for values outside range' do
-        expect(instance.check_range(11)).to be false
-      end
-    end
-  end
-
   describe '#random_value' do
     context 'when range is not set' do
       it 'calls super' do

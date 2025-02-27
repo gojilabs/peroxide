@@ -49,63 +49,9 @@ RSpec.describe Peroxide::Property::HasLength do
       it 'raises InvalidLengthError for range with negative minimum' do
         expect { instance.length = -1..5 }.to raise_error(Peroxide::Property::HasLength::InvalidLengthError)
       end
-    end
-  end
 
-  describe '#length?' do
-    context 'when length is set' do
-      before { instance.length = 3 }
-
-      it 'returns true' do
-        expect(instance.length?).to be true
-      end
-    end
-
-    context 'when length is not set' do
-      it 'returns false' do
-        expect(instance.length?).to be false
-      end
-    end
-  end
-
-  describe '#check_length' do
-    context 'when length is not set' do
-      it 'returns true' do
-        expect(instance.check_length('any string')).to be true
-      end
-    end
-
-    context 'when length is set' do
-      context 'with exact length' do
-        before { instance.length = 4 }
-
-        it 'returns true for matching length' do
-          expect(instance.check_length('test')).to be true
-        end
-
-        it 'returns false for non-matching length' do
-          expect(instance.check_length('wrong')).to be false
-        end
-      end
-
-      context 'with length range' do
-        before { instance.length = 2..6 }
-
-        it 'returns true for minimum length' do
-          expect(instance.check_length('ab')).to be true
-        end
-
-        it 'returns true for maximum length' do
-          expect(instance.check_length('abcdef')).to be true
-        end
-
-        it 'returns false for too short' do
-          expect(instance.check_length('a')).to be false
-        end
-
-        it 'returns false for too long' do
-          expect(instance.check_length('abcdefg')).to be false
-        end
+      it 'raises InvalidLengthError for range with minimum greater than maximum' do
+        expect { instance.length = 5..3 }.to raise_error(Peroxide::Property::HasLength::InvalidLengthError)
       end
     end
   end
@@ -118,14 +64,19 @@ RSpec.describe Peroxide::Property::HasLength do
     end
 
     context 'when length is set' do
-      before { instance.length = 5 }
+      before { instance.length = (3..5) }
 
-      it 'truncates value to maximum length' do
-        expect(instance.random_value.length).to eq(5)
+      it 'truncates value to at least the minimum length' do
+        expect(instance.random_value.length).to be >= 3
+      end
+
+      it 'truncates value to at most the maximum length' do
+        expect(instance.random_value.length).to be <= 5
       end
 
       it 'preserves original string up to length' do
-        expect(instance.random_value).to eq('test_')
+        val = instance.random_value
+        expect(val).to eq('test_string'[0...val.length])
       end
     end
   end
