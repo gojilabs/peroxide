@@ -23,7 +23,6 @@ module Peroxide
       end
 
       def random_value
-        puts "Generating random value for #{name} as integer"
         rand(DEFAULT_RANDOM_RANGE).to_i
       end
 
