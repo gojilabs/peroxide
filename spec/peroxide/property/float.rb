@@ -23,7 +23,7 @@ RSpec.describe Peroxide::Property::Float do
       it 'generates a random float within DEFAULT_RANDOM_RANGE' do
         result = float.send(:random_value)
         expect(result).to be_a(Float)
-        expect(result).to be_between(-1000.0, 1000.0)
+        expect(result).to be_between(::Float::MIN, ::Float::MAX)
       end
     end
 

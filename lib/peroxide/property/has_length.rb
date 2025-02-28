@@ -4,6 +4,7 @@ module Peroxide
   class Property
     module HasLength
       class InvalidLengthError < ValidationError; end
+      DEFAULT_MAX_LENGTH = 10_000
 
       attr_reader :length
 
@@ -27,37 +28,24 @@ module Peroxide
       end
 
       def length_min
-        @length_min ||= length&.min
+        length&.min || ::Integer::MIN_UINT
       end
 
       def length_max
-        @length_max ||= length&.max
+        length&.max || DEFAULT_MAX_LENGTH
       end
 
       def random_value
-        random_length = random_value_length
-        return super if random_length.nil?
+        random_length = rand(length_min..length_max)
 
-        super[0..random_length]
-      end
-
-      def random_value_length
-        if length_min.nil? && length_max.nil?
-          nil
-        elsif length_max.nil?
-          length_min + rand(100)
-        else
-          rand(length)
-        end
+        super[0...random_length]
       end
 
       def validated_value(param)
         validated_param = super(param)
         vp_length = validated_param&.length || 0
 
-        valid = (length_min.nil? || length_min <= vp_length) && (length_max.nil? || length_max >= vp_length)
-
-        raise InvalidLengthError unless valid
+        raise InvalidLengthError unless length_min <= vp_length && length_max >= vp_length
 
         validated_param
       end

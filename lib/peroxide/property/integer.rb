@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 require_relative '../property'
+require_relative '../../ext/integer'
 require_relative 'has_range'
 
 module Peroxide
   class Property
     class Integer < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an integer"
-      DEFAULT_RANDOM_RANGE = (-1000..1000)
+      DEFAULT_RANDOM_RANGE = (::Integer::MIN_INT..::Integer::MAX_INT)
 
       def initialize(name, required: false, range: nil, array_root: false)
         self.range = range

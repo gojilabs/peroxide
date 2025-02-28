@@ -23,7 +23,7 @@ RSpec.describe Peroxide::Property::Integer do
       it 'generates a random integer within DEFAULT_RANDOM_RANGE' do
         result = integer.send(:random_value)
         expect(result).to be_a(Integer)
-        expect(result).to be_between(-1000, 1000)
+        expect(result).to be_between(::Integer::MIN_INT, ::Integer::MAX_INT)
       end
     end
 

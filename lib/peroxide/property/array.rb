@@ -7,7 +7,7 @@ module Peroxide
   class Property
     class Array < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an array or one of its items is not valid"
-      DEFAULT_MAX_LENGTH = 20
+      DEFAULT_MAX_LENGTH = 10_000
 
       attr_accessor :item_property
 
@@ -20,9 +20,7 @@ module Peroxide
       private
 
       def random_value
-        rand(DEFAULT_MAX_LENGTH).to_i.times.map do
-          item_property.placeholder
-        end
+        ::Array.new(rand(DEFAULT_MAX_LENGTH)) { item_property.placeholder }
       end
 
       def serialized_value
