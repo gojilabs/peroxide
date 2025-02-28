@@ -8,10 +8,12 @@ require_relative 'property/date'
 require_relative 'property/datetime'
 require_relative 'property/enum'
 require_relative 'property/float'
+require_relative 'property/id'
 require_relative 'property/integer'
 require_relative 'property/no_content'
 require_relative 'property/object'
 require_relative 'property/string'
+require_relative 'property/uuid_v4'
 
 module Peroxide
   class Sanitizer
@@ -120,6 +122,14 @@ module Peroxide
 
     def self.integer(name = nil, range: nil, required: false)
       register_property(Peroxide::Property::Integer.new(name, range:, required:, array_root: @array_root))
+    end
+
+    def self.id(name = nil, required: false)
+      register_property(Peroxide::Property::Id.new(name, required:, array_root: @array_root))
+    end
+
+    def self.uuid(name = nil, required: false)
+      register_property(Peroxide::Property::UuidV4.new(name, required:, array_root: @array_root))
     end
 
     def self.no_content
