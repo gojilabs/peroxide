@@ -94,5 +94,17 @@ RSpec.describe Peroxide::Property::Object do
     it 'initializes with empty children hash' do
       expect(object.instance_variable_get(:@children)).to eq({})
     end
+
+    context 'when inside an array' do
+      let(:object) { described_class.new(nil, array_root: true) }
+
+      it 'must not have a name' do
+        expect(object.name).to be_nil
+      end
+
+      it 'must not raise an error when there is no name' do
+        expect { object }.not_to raise_error
+      end
+    end
   end
 end
