@@ -10,10 +10,10 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not an integer"
       DEFAULT_RANDOM_RANGE = (::Integer::MIN_INT..::Integer::MAX_INT)
 
-      def initialize(name, required: false, range: nil, array_root: false)
+      def initialize(name, required: false, range: nil)
         self.range = range
 
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private

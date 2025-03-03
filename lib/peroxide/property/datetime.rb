@@ -10,10 +10,10 @@ module Peroxide
     class Datetime < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' must be either a valid Time object or an ISO8601 string"
 
-      def initialize(name, required: false, range: nil, array_root: false)
+      def initialize(name, required: false, range: nil)
         self.range = range
 
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private

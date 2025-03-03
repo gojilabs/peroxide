@@ -9,8 +9,8 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a uuid v4"
       UUID_REGEX = /^[0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?4[0-9A-Fa-f]{3}-?[89ABab][0-9A-Fa-f]{3}-?[0-9A-Fa-f]{12}$/
 
-      def initialize(name, required: false, array_root: false)
-        super(name, required:, array_root:)
+      def initialize(name, required: false)
+        super(name, required:)
       end
 
       private

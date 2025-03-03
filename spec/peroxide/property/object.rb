@@ -96,7 +96,7 @@ RSpec.describe Peroxide::Property::Object do
     end
 
     context 'when inside an array' do
-      let(:object) { described_class.new(nil, array_root: true) }
+      let(:object) { described_class.new(nil) }
 
       it 'must not have a name' do
         expect(object.name).to be_nil

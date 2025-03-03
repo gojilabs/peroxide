@@ -88,7 +88,9 @@ RSpec.describe Peroxide::Sanitizer do
     before do
       described_class.action('test') do
         described_class.response(200) do
-          described_class.string('name')
+          described_class.object do
+            described_class.string('name')
+          end
         end
       end
     end
@@ -106,14 +108,16 @@ RSpec.describe Peroxide::Sanitizer do
       before do
         described_class.action('test') do
           described_class.response(200) do
-            described_class.string('name', required: true)
+            described_class.object(required: true) do
+              described_class.string('name', required: true)
+            end
           end
         end
       end
 
       it 'returns hash with random values' do
         result = described_class.placeholder_response!(params, 200)
-        expect(result).to include('name')
+        expect(result).to be_a(Hash)
         expect(result['name']).to be_a(String)
       end
     end

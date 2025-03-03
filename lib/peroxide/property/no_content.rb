@@ -7,8 +7,8 @@ module Peroxide
     class NoContent < Peroxide::Property
       ERROR_MESSAGE = 'Response body must be empty'
 
-      def initialize(required: false, array_root: false)
-        super('_no_content', required:, array_root:)
+      def initialize(required: false)
+        super(nil, required:)
       end
 
       private

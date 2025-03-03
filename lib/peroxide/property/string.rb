@@ -10,10 +10,10 @@ module Peroxide
       DEFAULT_MAX_LENGTH = 140
       ALPHABET = [*('a'..'z'), *('A'..'Z')].shuffle
 
-      def initialize(name, required: false, length: nil, array_root: false)
+      def initialize(name, required: false, length: nil)
         self.length = length
 
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private

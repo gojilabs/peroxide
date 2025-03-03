@@ -36,8 +36,8 @@ RSpec.describe Peroxide::Property::NoContent do
   end
 
   describe 'initialization' do
-    it 'sets name to _no_content' do
-      expect(no_content.name).to eq('_no_content')
+    it 'does not set name' do
+      expect(no_content.name).to be_nil
     end
 
     context 'when required is true' do

@@ -24,22 +24,6 @@ RSpec.describe Peroxide::Property do
         end
       end
     end
-
-    context 'with invalid name' do
-      it 'raises ConfigurationError for nil name' do
-        expect { described_class.new(nil) }.to raise_error(
-          Peroxide::Property::ConfigurationError,
-          'Property name is required'
-        )
-      end
-
-      it 'raises ConfigurationError for empty name' do
-        expect { described_class.new('') }.to raise_error(
-          Peroxide::Property::ConfigurationError,
-          'Property name is required'
-        )
-      end
-    end
   end
 
   describe '#required?' do

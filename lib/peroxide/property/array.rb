@@ -11,10 +11,10 @@ module Peroxide
 
       attr_accessor :item_property
 
-      def initialize(name, required: false, length: nil, array_root: false, item_property: nil)
+      def initialize(name, required: false, length: nil, item_property: nil)
         self.length = length
         self.item_property = item_property
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private

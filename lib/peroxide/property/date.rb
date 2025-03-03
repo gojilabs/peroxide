@@ -9,10 +9,10 @@ module Peroxide
     class Date < Peroxide::Property
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid date or is not an ISO8601 string"
 
-      def initialize(name, required: false, range: nil, array_root: false)
+      def initialize(name, required: false, range: nil)
         self.range = range
 
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private

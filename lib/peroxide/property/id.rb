@@ -10,10 +10,10 @@ module Peroxide
       ERROR_MESSAGE = "Property '%<name>s' value '%<value>s' is not a valid id"
       DEFAULT_RANDOM_RANGE = (::Integer::MIN_UINT..::Integer::MAX_UINT)
 
-      def initialize(name, required: false, array_root: false)
+      def initialize(name, required: false)
         self.range = DEFAULT_RANDOM_RANGE
 
-        super(name, required:, array_root:)
+        super(name, required:)
       end
 
       private
