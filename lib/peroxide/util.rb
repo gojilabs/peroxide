@@ -4,7 +4,7 @@ module Peroxide
     class InvalidStatusCode < Error; end
 
     def self.action_name(params)
-      action = params['action']
+      action = params['action'] || params[:action]
       return action.to_sym if action.respond_to?(:to_sym) && action.respond_to?(:empty?) && !action.empty?
 
       raise InvalidAction, "Action '#{action}' is invalid"
@@ -18,11 +18,16 @@ module Peroxide
     end
 
     def self.response_properties_for(actions, params, code)
-      actions[Util.action_name(params)][:response][Util.http_code(code)]
+      action_for(actions, params)[:response][Util.http_code(code)]
     end
 
     def self.request_properties_for(actions, params)
-      actions[Util.action_name(params)][:request]
+      action_for(actions, params)[:request]
+    end
+
+    def self.action_for(actions, params)
+      action_name = Util.action_name(params)
+      actions[action_name.to_s] || actions[action_name.to_sym]
     end
   end
 end
