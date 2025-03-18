@@ -18,9 +18,13 @@ require_relative 'property/uuid_v4'
 module Peroxide
   class Sanitizer
     class Failed < Error; end
+    class InvalidPropertyContainer < Error; end
+    class InvalidAction < Error; end
 
     def self.action(name)
-      raise Util::InvalidAction, "Action '#{name}' is invalid" if !name || name.empty? || !name.respond_to?(:to_sym)
+      if !name || name.respond_to?(:empty?) && name.empty? || !name.respond_to?(:to_sym)
+        raise InvalidAction, "Action '#{name}' is invalid"
+      end
 
       @actions ||= {}
 
@@ -34,55 +38,76 @@ module Peroxide
     end
 
     def self.request
-      @properties = []
+      @request = {}
+
       yield if block_given?
 
-      @actions[@current_action][:request] = @properties
+      @actions[@current_action][:request] = @request
+    end
+
+    def self.body
+      @properties = nil
+      yield if block_given?
+      @request[:body] = @properties
+    end
+
+    def self.url
+      @properties = nil
+      yield if block_given?
+      @request[:url] = @properties
     end
 
     def self.response(code)
-      @properties = []
+      @response = []
       yield if block_given?
 
       @actions[@current_action][:response][Util.http_code(code)] = @properties
     end
 
     def self.register_property(property)
-      if !@parent
-        @properties << property
-      elsif @parent.respond_to?(:add_child)
-        @parent.add_child(property)
-      elsif @parent.respond_to?(:item_property=)
-        @parent.item_property = property
+      if @properties.nil?
+        if property.name # implicit object container at root, this property is its first child
+          @properties = Peroxide::Property::Object.new(nil, required: true)
+          @properties.add_child(property)
+        else
+          @properties = property # root-level singleton property
+        end
+      elsif @properties.respond_to?(:add_child)
+        @properties.add_child(property)
+      elsif @properties.respond_to?(:item_property=)
+        @properties.item_property = property
+      else
+        raise InvalidPropertyContainer,
+              "Invalid container, property #{@properties.inspect} cannot contain property #{property.inspect}"
       end
 
       property
     end
 
-    def self.sanitize_request!(params)
-      properties = Util.request_properties_for(@actions, params)
-      {}.tap do |values|
-        properties.each do |property|
-          values[property.name] = property.validate!(params[property.name])
-        end
-      end
+    def self.sanitize_body!(params)
+      Util.body_properties_for(@actions, params)&.validate!(params)
+    end
+
+    def self.sanitize_url!(params)
+      Util.url_properties_for(@actions, params)&.validate!(params)
     end
 
     def self.sanitize_response!(params, code)
-      Util.response_properties_for(@actions, params, code)&.first&.validate!(params)
+      Util.response_properties_for(@actions, params, code)&.validate!(params)
     end
 
     def self.placeholder_response!(params, code)
-      Util.response_properties_for(@actions, params, code)&.first&.placeholder
+      Util.response_properties_for(@actions, params, code)&.placeholder
     end
 
     def self.array(name = nil, length: nil, required: false)
-      old_parent = @parent
-      @parent = register_property(Peroxide::Property::Array.new(name, length:, required:))
-      property = @parent
+      old_properties = @properties
+
+      property = register_property(Peroxide::Property::Array.new(name, length:, required:))
+      @properties = property
 
       yield if block_given?
-      @parent = old_parent
+      @properties = old_properties
 
       property
     end
@@ -124,11 +149,14 @@ module Peroxide
     end
 
     def self.object(name = nil, required: false)
-      old_parent = @parent
-      @parent = register_property(Peroxide::Property::Object.new(name, required:))
-      property = @parent
+      old_properties = @properties
+
+      property = register_property(Peroxide::Property::Object.new(name, required:))
+      @properties = property
+
       yield if block_given?
-      @parent = old_parent
+      @properties = old_properties
+
       property
     end
 
