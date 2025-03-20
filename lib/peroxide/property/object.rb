@@ -35,7 +35,7 @@ module Peroxide
       end
 
       def validated_value(param)
-        raise StandardError unless param.respond_to?(:[])
+        param.deep_symbolize_keys!
 
         {}.tap do |validated_param|
           @children.each do |key, child|

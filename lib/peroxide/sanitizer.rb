@@ -58,7 +58,7 @@ module Peroxide
     end
 
     def self.response(code)
-      @response = []
+      @properties = nil
       yield if block_given?
 
       @actions[@current_action][:response][Util.http_code(code)] = @properties
