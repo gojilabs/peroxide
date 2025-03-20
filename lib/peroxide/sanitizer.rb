@@ -18,13 +18,15 @@ require_relative 'property/uuid_v4'
 module Peroxide
   class Sanitizer
     class Failed < Error; end
-    class InvalidPropertyContainer < Error; end
     class InvalidAction < Error; end
+    class InvalidBodyProperties < Error; end
+    class InvalidPropertyContainer < Error; end
+    class InvalidResponseProperties < Error; end
+    class InvalidStatusCode < Error; end
+    class InvalidUrlProperties < Error; end
 
     def self.action(name)
-      if !name || name.respond_to?(:empty?) && name.empty? || !name.respond_to?(:to_sym)
-        raise InvalidAction, "Action '#{name}' is invalid"
-      end
+      return nil unless name.respond_to?(:to_sym) && !name.empty?
 
       @actions ||= {}
 
@@ -61,7 +63,10 @@ module Peroxide
       @properties = nil
       yield if block_given?
 
-      @actions[@current_action][:response][Util.http_code(code)] = @properties
+      http_code = Util.http_code(code)
+      raise InvalidStatusCode, "Invalid status code: #{code}" unless http_code
+
+      @actions[@current_action][:response][http_code] = @properties
     end
 
     def self.register_property(property)
@@ -85,15 +90,27 @@ module Peroxide
     end
 
     def self.sanitize_body!(params)
-      Util.body_properties_for(@actions, params)&.validate!(params)
+      properties = Util.body_properties_for(@actions, params)
+      raise InvalidBodyProperties, "No body properties found for action #{@current_action}" unless properties
+
+      properties.validate!(params)
     end
 
     def self.sanitize_url!(params)
-      Util.url_properties_for(@actions, params)&.validate!(params)
+      properties = Util.url_properties_for(@actions, params)
+      raise InvalidUrlProperties, "No url properties found for action #{@current_action}" unless properties
+
+      properties.validate!(params)
     end
 
     def self.sanitize_response!(params, code)
-      Util.response_properties_for(@actions, params, code)&.validate!(params)
+      properties = Util.response_properties_for(@actions, params, code)
+      unless properties
+        raise InvalidResponseProperties,
+              "No response properties found for action #{@current_action} and status code #{code}"
+      end
+
+      properties.validate!(params)
     end
 
     def self.placeholder_response!(params, code)

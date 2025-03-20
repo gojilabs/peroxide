@@ -4,33 +4,41 @@ module Peroxide
 
     def self.action_name(params)
       action = params[:action] || params['action']
-      return action.to_sym if action.respond_to?(:to_sym) && action.respond_to?(:empty?) && !action.empty?
+      return nil unless action.respond_to?(:to_sym) && action.respond_to?(:empty?) && !action.empty?
 
-      raise InvalidAction, "Action '#{action}' is invalid"
+      action.to_sym
     end
 
     def self.http_code(code)
       code = code.to_i
-      raise InvalidStatusCode, "Invalid status code: #{code}" if code < 100 || code > 599
+      return nil if code < 100 || code > 599
 
       code
     end
 
     def self.response_properties_for(actions, params, code)
-      action_for(actions, params)[:response][Util.http_code(code)]
+      action = action_for(actions, params)
+      return nil unless action
+
+      action[:response][Util.http_code(code)]
     end
 
     def self.body_properties_for(actions, params)
-      action_for(actions, params)[:request][:body]
+      action = action_for(actions, params)
+      return nil unless action
+
+      action[:request][:body]
     end
 
     def self.url_properties_for(actions, params)
-      action_for(actions, params)[:request][:url]
+      action = action_for(actions, params)
+      return nil unless action
+
+      action[:request][:url]
     end
 
     def self.action_for(actions, params)
-      action_name = Util.action_name(params)
-      actions[action_name.to_sym]
+      actions[Util.action_name(params)]
     end
   end
 end
