@@ -37,8 +37,8 @@ module Peroxide
         render json: { error: { msg: "Invalid params in request url: #{e.message}", code: 400 } }, status: :bad_request
       end
 
-      def render_sanitized_response(body, status)
-        sanitized_response_body = @sanitizer_class.sanitize_response!(body, status)
+      def render_sanitized_response(body, action, status)
+        sanitized_response_body = @sanitizer_class.sanitize_response!(body, action, status)
         head_only_response = !sanitized_response_body ||
                              (sanitized_response_body.respond_to?(:empty?) && sanitized_response_body.empty?)
 

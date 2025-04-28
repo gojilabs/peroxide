@@ -98,13 +98,13 @@ module Peroxide
 
     def self.sanitize_url!(params)
       properties = Util.url_properties_for(@actions, params)
-      raise InvalidUrlProperties, "No url properties found for action #{@current_action}" unless properties
+      return if properties.nil?
 
       properties.validate!(params)
     end
 
-    def self.sanitize_response!(params, code)
-      properties = Util.response_properties_for(@actions, params, code)
+    def self.sanitize_response!(params, action, code)
+      properties = Util.response_properties_for(@actions, params.merge(action:), code)
       unless properties
         raise InvalidResponseProperties,
               "No response properties found for action #{@current_action} and status code #{code}"
@@ -166,13 +166,10 @@ module Peroxide
     end
 
     def self.object(name = nil, required: false)
-      old_properties = @properties
-
       property = register_property(Peroxide::Property::Object.new(name, required:))
       @properties = property
 
       yield if block_given?
-      @properties = old_properties
 
       property
     end
