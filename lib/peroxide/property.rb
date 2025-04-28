@@ -36,8 +36,10 @@ module Peroxide
           raise ValidationError, error_message if required?
 
           nil
-        else
+        elsif name.nil?
           validated_value(param)
+        else
+          validated_value(param[name])
         end
     end
 

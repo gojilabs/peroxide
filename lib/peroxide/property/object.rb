@@ -35,13 +35,17 @@ module Peroxide
       end
 
       def validated_value(param)
-        param.deep_symbolize_keys!
+        param = param.permit!.to_h if param.respond_to?(:permit!)
+        param = param.deep_symbolize_keys
+        result = {}
 
-        {}.tap do |validated_param|
+        result[name] = {}.tap do |validated_param|
           @children.each do |key, child|
-            validated_param[key] = child.validate!(param[key])
+            validated_param[key] = child.validate!(param)
           end
         end
+
+        result
       rescue StandardError, TypeError
         raise ValidationError
       end
