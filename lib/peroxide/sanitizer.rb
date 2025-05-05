@@ -104,7 +104,7 @@ module Peroxide
     end
 
     def self.sanitize_response!(params, action, code)
-      properties = Util.response_properties_for(@actions, params.merge(action:), code)
+      properties = Util.response_properties_for(@actions, (params || {}).merge(action:), code)
       unless properties
         raise InvalidResponseProperties,
               "No response properties found for action #{@current_action} and status code #{code}"
@@ -119,12 +119,11 @@ module Peroxide
 
     def self.array(name = nil, length: nil, required: false)
       old_properties = @properties
-
       property = register_property(Peroxide::Property::Array.new(name, length:, required:))
       @properties = property
 
       yield if block_given?
-      @properties = old_properties
+      @properties = property.name == old_properties.name ? property : old_properties
 
       property
     end
@@ -170,6 +169,7 @@ module Peroxide
       @properties = property
 
       yield if block_given?
+      @properties = property
 
       property
     end
