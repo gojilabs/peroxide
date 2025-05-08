@@ -35,16 +35,21 @@ module Peroxide
       end
 
       def validated_value(param)
+        _, first_property = @children.first
+        return { name => first_property.validate!(param) } if @children.size == 1 && first_property.is_a?(Peroxide::Property::Array)
+
         param = param.permit!.to_h if param.respond_to?(:permit!)
         param = param.deep_symbolize_keys
         result = {}
 
-        result[name] = {}.tap do |validated_param|
+        data = {}.tap do |validated_param|
           @children.each do |key, child|
             validated_param[key] = child.validate!(param)
           end
         end
+        return data if name.nil?
 
+        result[name] = data
         result
       rescue StandardError, TypeError
         raise ValidationError
