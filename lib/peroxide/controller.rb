@@ -25,16 +25,16 @@ module Peroxide
         body = sanitizer_class.sanitize_body!(params)
         @sanitized_params ||= {}
         @sanitized_params[:body] = body
-      rescue Peroxide::Property::ValidationError
-        render json: { error: { msg: "Invalid params in request body: #{e.message}", code: 400 } }, status: :bad_request
+      rescue Peroxide::Property::ValidationError => e
+        render json: { error: { msg: "Invalid params in request body: #{e.cause.message}", code: 400 } }, status: :bad_request
       end
 
       def sanitize_url!
         url = sanitizer_class.sanitize_url!(params)
         @sanitized_params ||= {}
         @sanitized_params[:url] = url
-      rescue Peroxide::Property::ValidationError
-        render json: { error: { msg: "Invalid params in request url: #{e.message}", code: 400 } }, status: :bad_request
+      rescue Peroxide::Property::ValidationError => e
+        render json: { error: { msg: "Invalid params in request url: #{e.cause.message}", code: 400 } }, status: :bad_request
       end
 
       def render_sanitized_response(body, action, status)
