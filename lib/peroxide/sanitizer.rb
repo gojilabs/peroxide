@@ -123,7 +123,7 @@ module Peroxide
       @properties = property
 
       yield if block_given?
-      @properties = property.name == old_properties.name ? property : old_properties
+      @properties = property.name == old_properties&.name ? property : old_properties
 
       property
     end
