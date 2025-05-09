@@ -32,12 +32,12 @@ module Peroxide
 
     def validate!(param)
       @value =
-        if param.nil?
+        if name.nil?
+          validated_value(param)
+        elsif param[name].nil?
           raise ValidationError, error_message if required?
 
           nil
-        elsif name.nil?
-          validated_value(param)
         else
           validated_value(param[name])
         end
