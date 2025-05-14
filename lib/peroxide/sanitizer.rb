@@ -91,7 +91,7 @@ module Peroxide
 
     def self.sanitize_body!(params)
       properties = Util.body_properties_for(@actions, params)
-      raise InvalidBodyProperties, "No body properties found for action #{@current_action}" unless properties
+      return if properties.nil?
 
       properties.validate!(params)
     end
