@@ -104,7 +104,7 @@ module Peroxide
     end
 
     def self.sanitize_response!(params, action, code)
-      properties = Util.response_properties_for(@actions, (params || {}).merge(action:), code)
+      properties = Util.response_properties_for(@actions, { action: }, code)
       unless properties
         raise InvalidResponseProperties,
               "No response properties found for action #{@current_action} and status code #{code}"

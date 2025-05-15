@@ -26,7 +26,7 @@ module Peroxide
         @sanitized_params ||= {}
         @sanitized_params[:body] = body
       rescue Peroxide::Property::ValidationError => e
-        render json: { error: { msg: "Invalid params in request body: #{e.cause.message}", code: 400 } }, status: :bad_request
+        render json: { error: "Invalid params in request body: #{e.cause.message}" }, status: :bad_request
       end
 
       def sanitize_url!
@@ -34,11 +34,11 @@ module Peroxide
         @sanitized_params ||= {}
         @sanitized_params[:url] = url
       rescue Peroxide::Property::ValidationError => e
-        render json: { error: { msg: "Invalid params in request url: #{e.cause.message}", code: 400 } }, status: :bad_request
+        render json: { error: "Invalid params in request url: #{e.cause.message}" }, status: :bad_request
       end
 
-      def render_sanitized_response(body, action, status)
-        sanitized_response_body = @sanitizer_class.sanitize_response!(body, action, status)
+      def render_sanitized_response(body, status)
+        sanitized_response_body = @sanitizer_class.sanitize_response!(body, params[:action].to_sym, status)
         head_only_response = !sanitized_response_body ||
                              (sanitized_response_body.respond_to?(:empty?) && sanitized_response_body.empty?)
 
