@@ -44,7 +44,7 @@ module Peroxide
 
         data = {}.tap do |validated_param|
           @children.each do |key, child|
-            validated_param[key] = child.validate!(param)
+            validated_param[key] = child.validate!(param) if param.key?(key.to_sym) || param.key?(key)
           end
         end
         return data if name.nil?
