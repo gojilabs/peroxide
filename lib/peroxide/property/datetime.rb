@@ -41,7 +41,7 @@ module Peroxide
 
         time
       rescue StandardError, ArgumentError
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:)
       end
 
       prepend Peroxide::Property::HasRange

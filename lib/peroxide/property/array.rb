@@ -30,7 +30,7 @@ module Peroxide
       def validated_value(param)
         return param.map { |item| item_property.validate!(item) } if param.respond_to?(:map)
 
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:)
       end
 
       prepend Peroxide::Property::HasLength
