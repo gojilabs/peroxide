@@ -75,7 +75,7 @@ module Peroxide
       def validated_value(param)
         return param if true?(param) || false?(param)
 
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:)
       end
 
       def true?(param)

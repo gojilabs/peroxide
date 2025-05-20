@@ -32,7 +32,7 @@ module Peroxide
 
         raise StandardError
       rescue StandardError
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:)
       end
 
       prepend Peroxide::Property::HasRange

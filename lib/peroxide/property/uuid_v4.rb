@@ -22,7 +22,7 @@ module Peroxide
       def validated_value(param)
         return param if param&.to_s&.match?(UUID_REGEX)
 
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:)
       end
 
       def random_value

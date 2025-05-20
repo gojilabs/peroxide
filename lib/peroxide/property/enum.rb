@@ -28,7 +28,7 @@ module Peroxide
       def validated_value(param)
         return param if @values.include?(param) && param.respond_to?(:to_s)
 
-        raise ValidationError
+        raise ValidationError, format(ERROR_MESSAGE, name:, value:, values: @values)
       end
 
       def error_message

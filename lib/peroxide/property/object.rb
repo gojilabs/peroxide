@@ -44,15 +44,18 @@ module Peroxide
 
         data = {}.tap do |validated_param|
           @children.each do |key, child|
-            validated_param[key] = child.validate!(param) if param.key?(key.to_sym) || param.key?(key)
+            next if !param.key?(key.to_sym) && !param.key?(key)
+
+            child_data = child.validate!(param)
+            validated_param[key] = child_data.is_a?(Hash) && child_data.size == 1 && child_data[key] ? child_data[key] : child_data
           end
         end
         return data if name.nil?
 
         result[name] = data
         result
-      rescue StandardError, TypeError
-        raise ValidationError
+      rescue StandardError, TypeError => e
+        raise ValidationError, e.message
       end
     end
   end
