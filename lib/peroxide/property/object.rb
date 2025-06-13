@@ -18,6 +18,21 @@ module Peroxide
 
       private
 
+      def handle_missing_field(key, child, param)
+        return false if field_present?(key, param)
+        
+        raise "Property '#{key}' is missing" if child.required?
+        true
+      end
+
+      def field_present?(key, param)
+        param.key?(key.to_sym) || param.key?(key)
+      end
+
+      def transform_child_data(child_data, key)
+        child_data.is_a?(Hash) && child_data.size == 1 && child_data[key] ? child_data[key] : child_data
+      end
+
       def serialized_value
         value.tap do |hash|
           @children.each do |key, child|
@@ -42,17 +57,17 @@ module Peroxide
         param = param.deep_symbolize_keys
         result = {}
 
-        data = {}.tap do |validated_param|
-          @children.each do |key, child|
-            next if !param.key?(key.to_sym) && !param.key?(key)
-
-            child_data = child.validate!(param)
-            validated_param[key] = child_data.is_a?(Hash) && child_data.size == 1 && child_data[key] ? child_data[key] : child_data
-          end
+        validated_data = {}
+        @children.each do |key, child|
+          next if handle_missing_field(key, child, param)
+          
+          child_data = child.validate!(param)
+          validated_data[key] = transform_child_data(child_data, key)
         end
-        return data if name.nil?
 
-        result[name] = data
+        return validated_data if name.nil?
+
+        result[name] = validated_data
         result
       rescue StandardError, TypeError => e
         raise ValidationError, e.message
