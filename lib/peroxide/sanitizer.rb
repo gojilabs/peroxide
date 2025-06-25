@@ -140,7 +140,7 @@ module Peroxide
       register_property(Peroxide::Property::Datetime.new(name, required:, range:))
     end
 
-    def self.enum(name = nil, values, required: false)
+    def self.enum(name, values = nil, required: false)
       register_property(Peroxide::Property::Enum.new(name, values, required:))
     end
 
